@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 
 export default function NewQuestion() {
-  const baseUrl = process.env.VITE_BACKEND_URL
+  const baseUrl = import.meta.env.VITE_BACKEND_URL
 
   const [formData, setFormData] = useState<{
     title: string
@@ -93,6 +93,8 @@ export default function NewQuestion() {
         console.log("Post created:", result)
         window.location.href = "/"
       } else {
+        const errorResult = await response.json()
+        console.error("Failed to create post:", errorResult)
         console.error("Failed to create post")
         alert("질문 등록에 실패했습니다.")
       }

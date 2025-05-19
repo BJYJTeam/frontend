@@ -19,7 +19,7 @@ import type { Post } from "@/post_api_types"
 
 export default function PostDetail({ params }: { params: { id: string } }) {
 
-  const baseUrl = process.env.VITE_BACKEND_URL
+  const baseUrl = import.meta.env.VITE_BACKEND_URL
 
   const postId = Number.parseInt(params.id)
   const [post, setPost] = useState<Post | null>(null)
