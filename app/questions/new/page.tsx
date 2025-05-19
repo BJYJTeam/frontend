@@ -19,16 +19,16 @@ export default function NewQuestion() {
     author: string
     password: string
     isPrivate: boolean
-    tags: string[]
+    // tags: string[]
   }>({
     title: "",
     content: "",
     author: "",
     password: "",
     isPrivate: false,
-    tags: [],
+    // tags: [],
   })
-  const [tagInput, setTagInput] = useState("")
+  // const [tagInput, setTagInput] = useState("")
 
   
 
@@ -44,30 +44,30 @@ export default function NewQuestion() {
     setFormData((prev) => ({ ...prev, isPrivate: checked }))
   }
 
-  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setTagInput(e.target.value)
-  }
+  // const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  //   setTagInput(e.target.value)
+  // }
 
-  const addTag = (tag: string) => {
-    if (tag && !formData.tags.includes(tag) && formData.tags.length < 5) {
-      setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }))
-      setTagInput("")
-    }
-  }
+  // const addTag = (tag: string) => {
+  //   if (tag && !formData.tags.includes(tag) && formData.tags.length < 5) {
+  //     setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }))
+  //     setTagInput("")
+  //   }
+  // }
 
-  const removeTag = (tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }))
-  }
+  // const removeTag = (tagToRemove: string) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     tags: prev.tags.filter((tag) => tag !== tagToRemove),
+  //   }))
+  // }
 
-  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault()
-      addTag(tagInput.trim())
-    }
-  }
+  // const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  //   if (e.key === "Enter" || e.key === ",") {
+  //     e.preventDefault()
+  //     addTag(tagInput.trim())
+  //   }
+  // }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -117,8 +117,7 @@ export default function NewQuestion() {
               />
             </div>
 
-            {/* Tags input */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="tags">태그 (최대 5개)</Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {formData.tags.map((tag) => (
@@ -160,7 +159,7 @@ export default function NewQuestion() {
                   ))}
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
