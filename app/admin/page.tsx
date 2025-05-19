@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Post } from "@/post_api_types"
 import Link from "next/link"
 import { Calendar, MessageCircle, Search, User } from "lucide-react"
@@ -13,7 +13,24 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function AdminDashboard() {
+  const baseUrl = process.env.VITE_BACKEND_URL
+  const [questions, setQuestions] = useState<Post[]>([])
   const [sortBy, setSortBy] = useState("newest")
+
+  // Fetch questions from backend
+  useEffect(() => {
+    async function fetchQuestions() {
+      try {
+        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=1&size=1000&postStatus=ALL`)
+        if (!res.ok) throw new Error("Failed to fetch posts")
+        const data = await res.json()
+        setQuestions(data.data.posts)
+      } catch (err) {
+        console.error("Failed to fetch questions:", err)
+      }
+    }
+    fetchQuestions()
+  }, [])
 
   // Sort questions based on selected option
   const sortedQuestions = [...questions].sort((a, b) => {
@@ -183,71 +200,3 @@ function AdminQuestionCard({ question }: { question: Post }) {
     </Card>
   )
 }
-
-const questions: Post[] = [
-  {
-    postId: "1",
-    title: "청소년기 척추측만증 치료 방법에 대해 궁금합니다.",
-    author: "김민지",
-    content:
-      "14세 자녀가 최근 척추측만증 진단을 받았습니다. 콥스 각도가 25도인데, 이 정도면 수술이 필요한지, 아니면 보조기 착용만으로도 충분한지 궁금합니다. 또한 운동 치료는 어떤 것이 효과적인가요?",
-    commentCount: 2,
-    keywords: ["청소년", "치료", "보조기", "운동"],
-    status: "DOCTOR_COMMENTED",
-    createdAt: "2023-04-15T12:00:00",
-    updatedAt: "2023-04-15T12:00:00",
-    visibility: "PUBLIC",
-  },
-  {
-    postId: "2",
-    title: "성인 척추측만증 통증 관리 방법",
-    author: "이준호",
-    content:
-      "35세 성인입니다. 어릴 때부터 척추측만증이 있었으나 특별한 치료 없이 지내왔습니다. 최근 들어 요통이 심해졌는데, 척추측만증과 관련이 있을까요? 일상생활에서 통증을 줄이는 방법이 있을까요?",
-    commentCount: 3,
-    keywords: ["성인", "통증", "요통", "일상생활"],
-    status: "DOCTOR_COMMENTED",
-    createdAt: "2023-04-10T12:00:00",
-    updatedAt: "2023-04-10T12:00:00",
-    visibility: "PUBLIC",
-  },
-  {
-    postId: "3",
-    title: "척추측만증과 임신",
-    author: "박소연",
-    content:
-      "척추측만증이 있는 30대 여성입니다. 임신을 계획 중인데, 척추측만증이 임신과 출산에 영향을 미칠지 걱정됩니다. 임신 중 특별히 주의해야 할 점이나 관리 방법이 있을까요?",
-    commentCount: 0,
-    keywords: ["임신", "여성", "관리"],
-    status: "NORMAL",
-    createdAt: "2023-04-05T12:00:00",
-    updatedAt: "2023-04-05T12:00:00",
-    visibility: "PUBLIC",
-  },
-  {
-    postId: "4",
-    title: "척추측만증 검사 비용 문의",
-    author: "최동현",
-    content:
-      "척추측만증 검사를 받고 싶은데, 어떤 검사를 받아야 하는지, 그리고 대략적인 비용이 얼마인지 알고 싶습니다. 또한 건강보험 적용 여부도 궁금합니다.",
-    commentCount: 1,
-    keywords: ["검사", "비용", "건강보험"],
-    status: "AI_COMMENTED",
-    createdAt: "2023-04-01T12:00:00",
-    updatedAt: "2023-04-01T12:00:00",
-    visibility: "PUBLIC",
-  },
-  {
-    postId: "5",
-    title: "척추측만증과 스포츠 활동",
-    author: "정하은",
-    content:
-      "16세 딸이 척추측만증 진단을 받았습니다. 현재 수영을 배우고 있는데, 계속해도 괜찮을까요? 척추측만증에 도움이 되는 스포츠와 피해야 할 스포츠가 있다면 알려주세요.",
-    commentCount: 0,
-    keywords: ["청소년", "스포츠", "수영", "운동"],
-    status: "AI_COMMENTED",
-    createdAt: "2023-03-28T12:00:00",
-    updatedAt: "2023-03-28T12:00:00",
-    visibility: "PUBLIC",
-  },
-]
