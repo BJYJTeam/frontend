@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 
 export default function NewQuestion() {
+  const baseUrl = process.env.VITE_BACKEND_URL
+
   const [formData, setFormData] = useState<{
     title: string
     content: string
@@ -69,12 +71,35 @@ export default function NewQuestion() {
   //   }
   // }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // In a real application, you would submit the form data to your backend
-    console.log("Form submitted:", formData)
-    // Redirect to the questions list
-    window.location.href = "/"
+    try {
+      const response = await fetch(`${baseUrl}/api/post`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          content: formData.content,
+          author: formData.author,
+          password: formData.password,
+          visibility: formData.isPrivate ? "PRIVATE" : "PUBLIC",
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log("Post created:", result)
+        window.location.href = "/"
+      } else {
+        console.error("Failed to create post")
+        alert("질문 등록에 실패했습니다.")
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      alert("질문 등록에 실패했습니다.")
+    }
   }
 
   return (
