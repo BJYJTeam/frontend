@@ -110,26 +110,42 @@ export default function QnABoard() {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+          >
+            ≪
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
             ‹
           </Button>
 
-          {Array.from({ length: Math.min(totalPage, 10) }, (_, i) => {
-            const pageNumber = i + 1
-            return (
-              <Button
-                key={pageNumber}
-                variant={pageNumber === currentPage ? "default" : "outline"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setCurrentPage(pageNumber)}
-              >
-                {pageNumber}
-              </Button>
-            )
-          })}
+          {(() => {
+            const pageGroupSize = 10
+            const groupStart = Math.floor((currentPage - 1) / pageGroupSize) * pageGroupSize + 1
+            const groupEnd = Math.min(groupStart + pageGroupSize - 1, totalPage)
+            const buttons = []
+            for (let pageNumber = groupStart; pageNumber <= groupEnd; pageNumber++) {
+              buttons.push(
+                <Button
+                  key={pageNumber}
+                  variant={pageNumber === currentPage ? "default" : "outline"}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setCurrentPage(pageNumber)}
+                >
+                  {pageNumber}
+                </Button>
+              )
+            }
+            return buttons
+          })()}
 
           <Button
             variant="ghost"
@@ -139,6 +155,16 @@ export default function QnABoard() {
             disabled={currentPage === totalPage}
           >
             ›
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setCurrentPage(totalPage)}
+            disabled={currentPage === totalPage}
+          >
+            ≫
           </Button>
         </nav>
       </div>
