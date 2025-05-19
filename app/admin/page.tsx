@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Post } from "@/post_api_types"
+import type { Post, DoctorPostListResponse, DoctorPostStatusCountResponse } from "@/post_api_types"
 import Link from "next/link"
 import { Calendar, MessageCircle, Search, User } from "lucide-react"
 
@@ -16,20 +16,40 @@ export default function AdminDashboard() {
   const baseUrl = process.env.VITE_BACKEND_URL
   const [questions, setQuestions] = useState<Post[]>([])
   const [sortBy, setSortBy] = useState("newest")
+  const [totalCount, setTotalCount] = useState(0)
+  const [commentedCount, setCommentedCount] = useState(0)
+  const [unCommentCount, setUnCommentCount] = useState(0)
 
   // Fetch questions from backend
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=1&size=1000&postStatus=ALL`)
+        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=1&size=1000&postStatus=ALL`)
         if (!res.ok) throw new Error("Failed to fetch posts")
-        const data = await res.json()
+        const data: DoctorPostListResponse = await res.json()
         setQuestions(data.data.posts)
       } catch (err) {
         console.error("Failed to fetch questions:", err)
       }
     }
     fetchQuestions()
+  }, [])
+
+  // Fetch post status counts
+  useEffect(() => {
+    async function fetchStatusCounts() {
+      try {
+        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/doctor/post/count/status`)
+        if (!res.ok) throw new Error("Failed to fetch post status count")
+        const data: DoctorPostStatusCountResponse = await res.json()
+        setTotalCount(data.data.totalCount)
+        setCommentedCount(data.data.commentedCount)
+        setUnCommentCount(data.data.unCommentCount)
+      } catch (err) {
+        console.error("Failed to fetch post status count:", err)
+      }
+    }
+    fetchStatusCounts()
   }, [])
 
   // Sort questions based on selected option
@@ -77,7 +97,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-lg">총 질문</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{questions.length}</p>
+            <p className="text-3xl font-bold">{totalCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -85,7 +105,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-lg">답변 완료</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{questions.filter((q) => q.status === "DOCTOR_COMMENTED" || q.status === "AI_COMMENTED").length}</p>
+            <p className="text-3xl font-bold">{commentedCount}</p>
           </CardContent>
         </Card>
         <Card>
@@ -93,7 +113,7 @@ export default function AdminDashboard() {
             <CardTitle className="text-lg">미답변</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{unansweredQuestions.length}</p>
+            <p className="text-3xl font-bold">{unCommentCount}</p>
           </CardContent>
         </Card>
       </div>
