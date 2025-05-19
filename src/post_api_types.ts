@@ -140,3 +140,12 @@ export interface DoctorCommentsResponse {
     comments: Comment[];
   };
 }
+// 13. Doctor Post Status Count
+export interface DoctorPostStatusCountResponse {
+  status: number;
+  data: {
+    totalCount: number;
+    commentedCount: number;
+    unCommentCount: number;
+  };
+}
