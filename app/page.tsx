@@ -211,7 +211,7 @@ function QuestionCard({ question }: { question: Post }) {
       </CardHeader>
       <CardContent className="pb-2">
         <p className="line-clamp-2 text-muted-foreground">
-          {question.content.length > 100 ? `${question.content.slice(0, 100)}...` : question.content}
+          {question.content.length > 150 ? `${question.content.slice(0, 150)}...` : question.content}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
           {question.keywords.map((tag) => (

@@ -17,21 +17,23 @@ import { Switch } from "@/components/ui/switch"
 import { ImageAnnotator } from "@/components/image-annotator"
 import type { Post } from "@/post_api_types"
 
-export default function PostDetail({ params }: { params: { id: string } }) {
+export default function PostDetail({ params }: { params: Promise<{ id: string }> }) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  const postId = Number.parseInt(params.id)
+  const { id } = React.use(params)
+  const postId = Number.parseInt(id)
   const [post, setPost] = useState<Post | null>(null)
 
   useEffect(() => {
     async function fetchPost() {
       try {
-        const res = await fetch(`${baseUrl}/api/post/${params.id}`)
+        const res = await fetch(`${baseUrl}/api/post/list?page=1&size=1000&postStatus=ALL`)
         if (!res.ok) throw new Error("Failed to fetch from API")
         const data = await res.json()
-        if (data && data.postId) {
-          setPost(data)
+        const found = data.data.posts.find((p: Post) => String(p.postId) === id)
+        if (found) {
+          setPost(found)
           return
         }
       } catch (err) {
@@ -39,12 +41,12 @@ export default function PostDetail({ params }: { params: { id: string } }) {
       }
 
       // fallback
-      const fallback = posts.find((p) => p.postId === params.id) || posts[0]
+      const fallback = posts.find((p) => p.postId === id) || posts[0]
       setPost(fallback)
     }
 
     fetchPost()
-  }, [params.id])
+  }, [id])
 
   const [showAnswerForm, setShowAnswerForm] = useState(false)
   const [answerType, setAnswerType] = useState("doctor")
