@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 
 export default function NewQuestion() {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
   const [formData, setFormData] = useState<{
     title: string

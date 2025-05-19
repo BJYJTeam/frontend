@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function AdminDashboard() {
-  const baseUrl = import.meta.env.VITE_BACKEND_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
   const [questions, setQuestions] = useState<Post[]>([])
   const [sortBy, setSortBy] = useState("newest")
   const [totalCount, setTotalCount] = useState(0)

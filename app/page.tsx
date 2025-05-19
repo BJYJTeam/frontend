@@ -17,7 +17,7 @@ export default function QnABoard() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(1)
 
-  const baseUrl = process.env.VITE_BACKEND_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
   useEffect(() => {
     async function fetchPosts() {
