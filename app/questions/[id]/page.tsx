@@ -17,36 +17,49 @@ import { Switch } from "@/components/ui/switch"
 import { ImageAnnotator } from "@/components/image-annotator"
 import type { Post } from "@/post_api_types"
 
-export default function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+export default function PostDetail({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { visibility?: string };
+}) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  const { id } = React.use(params)
+  const { id } = params
   const postId = Number.parseInt(id)
   const [post, setPost] = useState<Post | null>(null)
 
   useEffect(() => {
     async function fetchPost() {
       try {
-        const res = await fetch(`${baseUrl}/api/post/list?page=1&size=1000&postStatus=ALL`)
-        if (!res.ok) throw new Error("Failed to fetch from API")
-        const data = await res.json()
-        const found = data.data.posts.find((p: Post) => String(p.postId) === id)
-        if (found) {
-          setPost(found)
-          return
-        }
+        const visibility = searchParams?.visibility ?? "PUBLIC";
+        const url =
+          visibility === "PRIVATE"
+            ? `${baseUrl}/api/post/${id}/private`
+            : `${baseUrl}/api/post/${id}/public`;
+        const options =
+          visibility === "PRIVATE"
+            ? {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: prompt("비밀번호를 입력하세요") }),
+              }
+            : undefined;
+
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error("Failed to fetch post detail");
+        const data = await res.json();
+        setPost(data.data.post);
       } catch (err) {
-        console.warn("Falling back to mock data due to error:", err)
+        console.warn("Falling back to mock data due to error:", err);
+        const fallback = posts.find((p) => p.postId === id) || posts[0];
+        setPost(fallback);
       }
-
-      // fallback
-      const fallback = posts.find((p) => p.postId === id) || posts[0]
-      setPost(fallback)
     }
-
-    fetchPost()
-  }, [id])
+    fetchPost();
+  }, [id, searchParams]);
 
   const [showAnswerForm, setShowAnswerForm] = useState(false)
   const [answerType, setAnswerType] = useState("doctor")

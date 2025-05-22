@@ -191,7 +191,13 @@ function QuestionCard({ question }: { question: Post }) {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">
-            <Link href={`/questions/${question.postId}`} className="hover:underline">
+            <Link
+              href={{
+                pathname: `/questions/${question.postId}`,
+                query: { visibility: question.visibility },
+              }}
+              className="hover:underline"
+            >
               {question.title}
             </Link>
           </CardTitle>
@@ -227,7 +233,13 @@ function QuestionCard({ question }: { question: Post }) {
           {question.commentCount}
         </div>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/questions/${question.postId}`} className="flex items-center">
+          <Link
+            href={{
+              pathname: `/questions/${question.postId}`,
+              query: { visibility: question.visibility },
+            }}
+            className="flex items-center"
+          >
             자세히 보기
             <ChevronRight className="ml-1 h-4 w-4" />
           </Link>
