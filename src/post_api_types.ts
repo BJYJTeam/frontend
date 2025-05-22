@@ -1,4 +1,12 @@
-// post_api_types.ts
+// Upload doctor comment image
+export interface UploadCommentImageRequest {
+  commentId: string;
+  image: File;
+}
+// Private post detail request
+export interface PrivatePostDetailRequest {
+  password: string;
+}
 
 // 1. Create Post
 export interface CreatePostRequest {
@@ -43,6 +51,8 @@ export interface StatusMessageResponse {
 }
 
 // 4. Get Post List
+export type PostStatus = "ALL" | "NORMAL" | "DOCTOR_COMMENTED" | "AI_COMMENTED";
+
 export interface PostListResponse {
   status: number;
   data: {
@@ -59,7 +69,7 @@ export interface Post {
   title: string;
   content: string;
   author: string;
-  status: "NORMAL" | "DOCTOR_COMMENTED" | "AI_COMMENTED";
+  status: PostStatus;
   createdAt: string;
   updatedAt: string;
   commentCount: number;
@@ -86,11 +96,12 @@ export interface PrivateCommentRequest {
 
 export interface Comment {
   commentId: string;
-  status: "NORMAL" | "SOLVED" | "UNSOLVED";
+  status: "NORMAL" | "SOLVED" | "UNSOLVED" | "DRAFT";
   content: string;
-  author: string;
+  author: "AI" | "DOCTOR" | string;
   createdAt: string;
   updatedAt: string;
+  imageUrls?: string[];
 }
 
 // 7. Edit Post
@@ -111,7 +122,20 @@ export interface DeletePostRequest {
 export interface CreateDoctorCommentRequest {
   postId: string;
   content: string;
-  status: "NORMAL" | "SOLVED" | "UNSOLVED";
+}
+
+export interface CreateDoctorCommentResponse {
+  status: number;
+  data: {
+    commentId: string;
+  };
+}
+
+export interface UploadCommentImageResponse {
+  status: number;
+  data: {
+    imageUrl: string;
+  };
 }
 
 // 10. Doctor Post List
@@ -119,6 +143,7 @@ export interface DoctorPostListResponse {
   status: number;
   data: {
     posts: Post[];
+    keywords: KeywordCount[];
     totalPage: number;
   };
 }
@@ -147,5 +172,31 @@ export interface DoctorPostStatusCountResponse {
     totalCount: number;
     commentedCount: number;
     unCommentCount: number;
+  };
+}
+export interface PostDetailResponse {
+  status: number;
+  data: {
+    post: Post;
+    comments: Comment[];
+  };
+}
+
+export interface UploadImageResponse {
+  status: number;
+  data: {
+    imageUrl: string;
+  };
+}
+// Doctor post detail request/response
+export interface DoctorPostDetailRequest {
+  postId: string;
+}
+
+export interface DoctorPostDetailResponse {
+  status: number;
+  data: {
+    post: Post;
+    comments: Comment[];
   };
 }
