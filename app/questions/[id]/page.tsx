@@ -202,6 +202,18 @@ export default function PostDetail({
       setShowImageAnnotator(false);
       setAnnotatedImage(null);
       alert("답변이 등록되었습니다.");
+      setComments((prev) => [
+        ...prev,
+        {
+          commentId,
+          status: "NORMAL",
+          content: answerContent,
+          author: answerType === "doctor" ? "DOCTOR" : "AI",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          imageUrls: annotatedImage ? [""] : [], // Optional: update with actual URL if image upload returns one
+        },
+      ]);
     } catch (error) {
       console.error("Error submitting answer:", error);
       alert("답변 등록에 실패했습니다.");
