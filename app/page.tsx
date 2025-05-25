@@ -60,9 +60,9 @@ export default function QnABoard() {
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative w-full md:w-[300px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="검색어를 입력하세요" className="w-full pl-8" />
+            <Input type="search" placeholder="검색어를 입력하세요" className="w-full pl-8 border border-gray-200 focus:border-black focus:ring-0" />
           </div>
-          <Button>
+          <Button className="bg-black text-white">
             <Link href="/questions/new">질문하기</Link>
           </Button>
         </div>
@@ -91,11 +91,35 @@ export default function QnABoard() {
       </div>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">전체</TabsTrigger>
-          <TabsTrigger value="answered">답변 완료</TabsTrigger>
-          <TabsTrigger value="ai-answered">AI 자동 답변 완료</TabsTrigger>
-          <TabsTrigger value="unanswered">미답변</TabsTrigger>
+        <TabsList className="mb-4 bg-gray-100 rounded-lg p-1 flex gap-0 w-fit">
+          <TabsTrigger
+            value="all"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            전체
+          </TabsTrigger>
+          <TabsTrigger
+            value="answered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            답변 완료
+          </TabsTrigger>
+          <TabsTrigger
+            value="ai-answered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            AI 자동 답변 완료
+          </TabsTrigger>
+          <TabsTrigger
+            value="unanswered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            미답변
+          </TabsTrigger>
         </TabsList>
 
         {renderTabContent("all", questions)}
@@ -137,7 +161,7 @@ export default function QnABoard() {
                   key={pageNumber}
                   variant={pageNumber === currentPage ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8"
+                  className={`h-8 w-8 ${pageNumber === currentPage ? "bg-black text-white" : ""}`}
                   onClick={() => setCurrentPage(pageNumber)}
                 >
                   {pageNumber}
@@ -187,7 +211,7 @@ export default function QnABoard() {
 
 function QuestionCard({ question }: { question: Post }) {
   return (
-    <Card>
+    <Card className="border border-gray-200">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">
@@ -202,11 +226,11 @@ function QuestionCard({ question }: { question: Post }) {
             </Link>
           </CardTitle>
           {question.status === "DOCTOR_COMMENTED" ? (
-            <Badge variant="default" className="bg-green-500 hover:bg-green-600">답변완료</Badge>
+            <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white border-0 rounded-full px-3 py-1">답변완료</Badge>
           ) : question.status === "AI_COMMENTED" ? (
-            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">AI 답변</Badge>
+            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600 text-white border-0 rounded-full px-3 py-1">AI 답변</Badge>
           ) : (
-            <Badge variant="outline">미답변</Badge>
+            <Badge variant="outline" className="border-gray-300 text-gray-500 rounded-full px-3 py-1">미답변</Badge>
           )}
         </div>
         <CardDescription className="flex items-center gap-2 text-sm">

@@ -19,6 +19,94 @@ export default function AdminDashboard() {
   const [totalCount, setTotalCount] = useState(0)
   const [commentedCount, setCommentedCount] = useState(0)
   const [unCommentCount, setUnCommentCount] = useState(0)
+  // Pagination state for 전체 질문
+  const [allPage, setAllPage] = useState(1)
+  const [allTotalPage, setAllTotalPage] = useState(1)
+  const [allQuestions, setAllQuestions] = useState<Post[]>([])
+  // Pagination state for 답변 완료
+  const [answeredPage, setAnsweredPage] = useState(1)
+  const [answeredTotalPage, setAnsweredTotalPage] = useState(1)
+  const [answeredQuestions, setAnsweredQuestions] = useState<Post[]>([])
+  // Pagination state for AI 답변
+  const [aiPage, setAiPage] = useState(1)
+  const [aiTotalPage, setAiTotalPage] = useState(1)
+  const [aiQuestions, setAiQuestions] = useState<Post[]>([])
+  // Pagination state for 미답변 질문
+  const [unansweredPage, setUnansweredPage] = useState(1)
+  const [unansweredTotalPage, setUnansweredTotalPage] = useState(1)
+  const [unansweredPaginatedQuestions, setUnansweredPaginatedQuestions] = useState<Post[]>([])
+
+  // Fetch paginated questions for 전체 질문
+  useEffect(() => {
+    async function fetchAllQuestions() {
+      try {
+        const res = await fetch(
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${allPage}&size=10&postStatus=ALL`
+        )
+        if (!res.ok) throw new Error("Failed to fetch posts")
+        const data: DoctorPostListResponse = await res.json()
+        setAllQuestions(data.data.posts)
+        setAllTotalPage(data.data.totalPage || 1)
+      } catch (err) {
+        console.error("Failed to fetch questions:", err)
+      }
+    }
+    fetchAllQuestions()
+  }, [allPage, baseUrl])
+
+  // Fetch paginated answered questions
+  useEffect(() => {
+    async function fetchAnsweredQuestions() {
+      try {
+        const res = await fetch(
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${answeredPage}&size=10&postStatus=DOCTOR_COMMENTED`
+        )
+        if (!res.ok) throw new Error("Failed to fetch answered posts")
+        const data: DoctorPostListResponse = await res.json()
+        setAnsweredQuestions(data.data.posts)
+        setAnsweredTotalPage(data.data.totalPage || 1)
+      } catch (err) {
+        console.error("Failed to fetch answered questions:", err)
+      }
+    }
+    fetchAnsweredQuestions()
+  }, [answeredPage, baseUrl])
+
+  // Fetch paginated AI answered questions
+  useEffect(() => {
+    async function fetchAiQuestions() {
+      try {
+        const res = await fetch(
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${aiPage}&size=10&postStatus=AI_COMMENTED`
+        )
+        if (!res.ok) throw new Error("Failed to fetch AI answered posts")
+        const data: DoctorPostListResponse = await res.json()
+        setAiQuestions(data.data.posts)
+        setAiTotalPage(data.data.totalPage || 1)
+      } catch (err) {
+        console.error("Failed to fetch AI answered questions:", err)
+      }
+    }
+    fetchAiQuestions()
+  }, [aiPage, baseUrl])
+
+  // Fetch paginated unanswered questions
+  useEffect(() => {
+    async function fetchUnansweredQuestions() {
+      try {
+        const res = await fetch(
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${unansweredPage}&size=10&postStatus=NORMAL`
+        )
+        if (!res.ok) throw new Error("Failed to fetch unanswered posts")
+        const data: DoctorPostListResponse = await res.json()
+        setUnansweredPaginatedQuestions(data.data.posts)
+        setUnansweredTotalPage(data.data.totalPage || 1)
+      } catch (err) {
+        console.error("Failed to fetch unanswered questions:", err)
+      }
+    }
+    fetchUnansweredQuestions()
+  }, [unansweredPage, baseUrl])
 
   // Fetch questions from backend
   useEffect(() => {
@@ -66,6 +154,16 @@ export default function AdminDashboard() {
   const unansweredQuestions = sortedQuestions.filter(
     (q) => q.status !== "DOCTOR_COMMENTED" && q.status !== "AI_COMMENTED"
   )
+
+  // Sort allQuestions for pagination tab
+  const sortedAllQuestions = [...allQuestions].sort((a, b) => {
+    if (sortBy === "newest") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    } else if (sortBy === "oldest") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    }
+    return 0
+  })
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
@@ -127,33 +225,190 @@ export default function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="unanswered" className="space-y-4">
-          {unansweredQuestions.length > 0 ? (
-            unansweredQuestions.map((question) => <AdminQuestionCard key={question.postId} question={question} />)
+          {unansweredPaginatedQuestions.length > 0 ? (
+            unansweredPaginatedQuestions.map((question) => <AdminQuestionCard key={question.postId} question={question} />)
           ) : (
             <p className="text-center text-muted-foreground py-8">미답변 질문이 없습니다.</p>
           )}
+          {/* Numbered Pagination controls for unanswered */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={unansweredPage === 1}
+              onClick={() => setUnansweredPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </Button>
+            {Array.from({ length: unansweredTotalPage }, (_, i) => i + 1)
+              .filter((pageNum) => {
+                if (unansweredTotalPage <= 5) return true;
+                if (unansweredPage <= 3) return pageNum <= 5;
+                if (unansweredPage >= unansweredTotalPage - 2) return pageNum > unansweredTotalPage - 5;
+                return Math.abs(pageNum - unansweredPage) <= 2;
+              })
+              .map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === unansweredPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setUnansweredPage(pageNum)}
+                  className={pageNum === unansweredPage ? "font-bold" : ""}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={unansweredPage === unansweredTotalPage}
+              onClick={() => setUnansweredPage((p) => Math.min(unansweredTotalPage, p + 1))}
+            >
+              다음
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="all" className="space-y-4">
-          {sortedQuestions.map((question) => (
-            <AdminQuestionCard key={question.postId} question={question} />
-          ))}
+          {sortedAllQuestions.length > 0 ? (
+            sortedAllQuestions.map((question) => (
+              <AdminQuestionCard key={question.postId} question={question} />
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-8">질문이 없습니다.</p>
+          )}
+          {/* Numbered Pagination controls */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={allPage === 1}
+              onClick={() => setAllPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </Button>
+            {/* Page number buttons (show up to 5, centered around current page) */}
+            {Array.from({ length: allTotalPage }, (_, i) => i + 1)
+              .filter((pageNum) => {
+                if (allTotalPage <= 5) return true;
+                if (allPage <= 3) return pageNum <= 5;
+                if (allPage >= allTotalPage - 2) return pageNum > allTotalPage - 5;
+                return Math.abs(pageNum - allPage) <= 2;
+              })
+              .map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === allPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAllPage(pageNum)}
+                  className={pageNum === allPage ? "font-bold" : ""}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={allPage === allTotalPage}
+              onClick={() => setAllPage((p) => Math.min(allTotalPage, p + 1))}
+            >
+              다음
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="answered" className="space-y-4">
-          {sortedQuestions
-            .filter((question) => question.status === "DOCTOR_COMMENTED")
-            .map((question) => (
+          {answeredQuestions.length > 0 ? (
+            answeredQuestions.map((question) => (
               <AdminQuestionCard key={question.postId} question={question} />
-            ))}
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-8">답변 완료된 질문이 없습니다.</p>
+          )}
+          {/* Numbered Pagination controls for answered */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={answeredPage === 1}
+              onClick={() => setAnsweredPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </Button>
+            {Array.from({ length: answeredTotalPage }, (_, i) => i + 1)
+              .filter((pageNum) => {
+                if (answeredTotalPage <= 5) return true;
+                if (answeredPage <= 3) return pageNum <= 5;
+                if (answeredPage >= answeredTotalPage - 2) return pageNum > answeredTotalPage - 5;
+                return Math.abs(pageNum - answeredPage) <= 2;
+              })
+              .map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === answeredPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAnsweredPage(pageNum)}
+                  className={pageNum === answeredPage ? "font-bold" : ""}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={answeredPage === answeredTotalPage}
+              onClick={() => setAnsweredPage((p) => Math.min(answeredTotalPage, p + 1))}
+            >
+              다음
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="ai-answered" className="space-y-4">
-          {sortedQuestions
-            .filter((question) => question.status === "AI_COMMENTED")
-            .map((question) => (
+          {aiQuestions.length > 0 ? (
+            aiQuestions.map((question) => (
               <AdminQuestionCard key={question.postId} question={question} />
-            ))}
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-8">AI 답변된 질문이 없습니다.</p>
+          )}
+          {/* Numbered Pagination controls for AI answered */}
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={aiPage === 1}
+              onClick={() => setAiPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </Button>
+            {Array.from({ length: aiTotalPage }, (_, i) => i + 1)
+              .filter((pageNum) => {
+                if (aiTotalPage <= 5) return true;
+                if (aiPage <= 3) return pageNum <= 5;
+                if (aiPage >= aiTotalPage - 2) return pageNum > aiTotalPage - 5;
+                return Math.abs(pageNum - aiPage) <= 2;
+              })
+              .map((pageNum) => (
+                <Button
+                  key={pageNum}
+                  variant={pageNum === aiPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAiPage(pageNum)}
+                  className={pageNum === aiPage ? "font-bold" : ""}
+                >
+                  {pageNum}
+                </Button>
+              ))}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={aiPage === aiTotalPage}
+              onClick={() => setAiPage((p) => Math.min(aiTotalPage, p + 1))}
+            >
+              다음
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
@@ -161,6 +416,15 @@ export default function AdminDashboard() {
 }
 
 function AdminQuestionCard({ question }: { question: Post }) {
+  // Format date as yyyy-MM-dd HH:mm
+  const date = new Date(question.createdAt)
+  const yyyy = date.getFullYear()
+  const MM = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const HH = String(date.getHours()).padStart(2, '0')
+  const mm = String(date.getMinutes()).padStart(2, '0')
+  const formattedDate = `${yyyy}-${MM}-${dd} ${HH}:${mm}`
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -189,7 +453,7 @@ function AdminQuestionCard({ question }: { question: Post }) {
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            <span>{question.createdAt}</span>
+            <span>{formattedDate}</span>
           </div>
           <div className="flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />

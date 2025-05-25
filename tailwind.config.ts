@@ -8,7 +8,12 @@ const config: Config = {
     "./src/pages/**/*.{ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: "#000000", 
+        "primary-foreground": "#ffffff",
+      },
+    },
   },
   plugins: [forms],
 };

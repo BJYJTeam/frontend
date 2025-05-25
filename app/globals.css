@@ -119,4 +119,82 @@
   body {
     @apply bg-background text-foreground;
   }
-} */
+}
+
+/* Custom black slider styles for image-annotator and all sliders */
+.slider-black-thumb [data-radix-slider-thumb] {
+  background-color: #000 !important;
+  border-color: #000 !important;
+}
+.slider-black-thumb [data-radix-slider-track] {
+  background-color: #000 !important;
+}
+
+/* Make all shadcn/ui Switch toggles black when checked */
+[data-state="checked"].shadcn-switch,
+[data-state="checked"].shadcn-switch[data-state="checked"] {
+  background-color: #000 !important;
+  border-color: #000 !important;
+}
+
+/* If your Switch uses a different class, you may need to adjust the selector. For shadcn/ui, the thumb is usually styled as below: */
+[data-state="checked"] .shadcn-switch-thumb {
+  background-color: #fff !important;
+}
+
+/* If your Switch uses radix primitives, this will also work: */
+[data-state="checked"][role="switch"] {
+  background-color: #000 !important;
+  border-color: #000 !important;
+}
+[data-state="checked"][role="switch"] > * {
+  background-color: #fff !important;
+}
+
+/* Make main action buttons (답변 작성하기, 댓글 등록, 답변 등록) black with white text */
+button[type="submit"],
+button[data-variant="default"],
+.shadcn-btn-primary,
+button.primary-action {
+  background-color: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
+}
+
+/* Also for shadcn/ui Button with variant=default if not already covered */
+button.bg-black,
+button.text-white {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+/* Custom tab styles for QnABoard */
+[data-state="inactive"].tab-trigger {
+  color: #a3a3a3 !important; /* Tailwind gray-400 */
+  background: transparent !important;
+}
+[data-state="active"].tab-trigger {
+  color: #000 !important;
+  background: #fff !important;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.01); /* subtle shadow for separation */
+  z-index: 1;
+  /* Make the white tab slightly smaller than the grey bg */
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+}
+
+/* Remove border radius on leftmost and rightmost tabs to match grey background */
+.tab-trigger:first-child {
+  border-top-left-radius: 0.5rem !important;
+  border-bottom-left-radius: 0.5rem !important;
+}
+.tab-trigger:last-child {
+  border-top-right-radius: 0.5rem !important;
+  border-bottom-right-radius: 0.5rem !important;
+}
+
+/* Remove extra spacing between tabs */
+.tab-trigger {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}

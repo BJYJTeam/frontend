@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client"
 
 import React from "react"
@@ -5,6 +6,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Calendar, MessageCircle, User, ImageIcon } from "lucide-react"
+
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
@@ -15,26 +18,46 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ImageAnnotator } from "@/components/image-annotator"
-import type { Post } from "@/post_api_types"
+import type { Post, Comment } from "@/post_api_types"
+
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  let hours = date.getHours()
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  hours = hours % 12
+  if (hours === 0) hours = 12
+  return `${yyyy}-${mm}-${dd} ${hours}:${minutes} ${ampm}`
+}
 
 export default function PostDetail({
   params,
-  searchParams,
 }: {
-  params: { id: string };
-  searchParams: { visibility?: string };
+  params: Promise<{ id: string }>;
 }) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  const { id } = params
-  const postId = Number.parseInt(id)
+  const { id } = React.use(params)
+  const postId = id
   const [post, setPost] = useState<Post | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
+
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const v = searchParams.get("visibility")
+    if (v === "PRIVATE") {
+      setVisibility("PRIVATE")
+    }
+  }, [searchParams])
 
   useEffect(() => {
     async function fetchPost() {
       try {
-        const visibility = searchParams?.visibility ?? "PUBLIC";
         const url =
           visibility === "PRIVATE"
             ? `${baseUrl}/api/post/${id}/private`
@@ -51,15 +74,18 @@ export default function PostDetail({
         const res = await fetch(url, options);
         if (!res.ok) throw new Error("Failed to fetch post detail");
         const data = await res.json();
-        setPost(data.data.post);
+        const { post, comments } = data.data;
+        setPost(post);
+        setComments(comments);
       } catch (err) {
         console.warn("Falling back to mock data due to error:", err);
         const fallback = posts.find((p) => p.postId === id) || posts[0];
         setPost(fallback);
+        setComments([]); // fallback: no comments
       }
     }
     fetchPost();
-  }, [id, searchParams]);
+  }, [id, visibility]);
 
   const [showAnswerForm, setShowAnswerForm] = useState(false)
   const [answerType, setAnswerType] = useState("doctor")
@@ -68,6 +94,8 @@ export default function PostDetail({
   const [showImageAnnotator, setShowImageAnnotator] = useState(false)
   const [annotatedImage, setAnnotatedImage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // State for handling new comment input
+  const [newComment, setNewComment] = useState("");
 
   // In a real application, this would be determined by authentication
   const isStaff = true // Simulating that the current user is staff
@@ -78,53 +106,54 @@ export default function PostDetail({
   }
 
   const handleAnswerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      // In a real application, you would send this data to your backend
-      let imageId = null
+      // Step 1: Submit comment
+      const commentRes = await fetch(`${baseUrl}/api/doctor/post/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId,
+          content: answerContent,
+        }),
+      });
 
-      // If there's an annotated image, save it to Redis
-      if (annotatedImage) {
-        const response = await fetch("/api/images", {
+      const commentData = await commentRes.json();
+      const commentId = commentData.data.commentId;
+
+      // Step 2: Upload annotated image if exists
+      if (annotatedImage && commentId) {
+        const blob = await (await fetch(annotatedImage)).blob();
+        const formData = new FormData();
+        formData.append("image", new File([blob], "annotation.jpeg", { type: "image/jpeg" }));
+
+        // Debugging logs before image upload
+        console.log("baseUrl:", baseUrl);
+        console.log("commentId:", commentId);
+        console.log("Uploading image to:", `${baseUrl}/api/doctor/post/comment/image?commentId=${commentId}`);
+        console.log("Blob size:", blob.size);
+
+        await fetch(`${baseUrl}/api/doctor/post/comment/image?commentId=${commentId}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            postId,
-            imageData: annotatedImage,
-          }),
-        })
-
-        const data = await response.json()
-        if (data.success) {
-          imageId = data.imageId
-        }
+          body: formData,
+        });
       }
 
-      console.log("Answer submitted:", {
-        postId,
-        answerType,
-        content: answerContent,
-        isPublic,
-        imageId,
-      })
-
-      // Reset form and hide it
-      setAnswerContent("")
-      setShowAnswerForm(false)
-      setShowImageAnnotator(false)
-      setAnnotatedImage(null)
-
-      // Show success message or update UI
-      alert("답변이 등록되었습니다.")
+      // Reset form and UI
+      setAnswerContent("");
+      setShowAnswerForm(false);
+      setShowImageAnnotator(false);
+      setAnnotatedImage(null);
+      alert("답변이 등록되었습니다.");
     } catch (error) {
-      console.error("Error submitting answer:", error)
-      alert("답변 등록에 실패했습니다.")
+      console.error("Error submitting answer:", error);
+      alert("답변 등록에 실패했습니다.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -162,7 +191,7 @@ export default function PostDetail({
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{post.createdAt}</span>
+                <span>{formatDateTime(post.createdAt)}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MessageCircle className="h-4 w-4" />
@@ -190,7 +219,7 @@ export default function PostDetail({
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">답변</h2>
-              {isStaff && !showAnswerForm && <Button onClick={() => setShowAnswerForm(true)}>답변 작성하기</Button>}
+              {isStaff && !showAnswerForm && <Button onClick={() => setShowAnswerForm(true)} className="bg-black text-white">답변 작성하기</Button>}
             </div>
 
             {/* Answer Form for Staff */}
@@ -265,7 +294,7 @@ export default function PostDetail({
                       <Button variant="outline" type="button" onClick={() => setShowAnswerForm(false)}>
                         취소
                       </Button>
-                      <Button type="submit" disabled={isSubmitting}>
+                      <Button type="submit" disabled={isSubmitting} className="bg-black text-white">
                         {isSubmitting ? "등록 중..." : "답변 등록"}
                       </Button>
                     </div>
@@ -284,36 +313,38 @@ export default function PostDetail({
 
                 {post.status === "DOCTOR_COMMENTED" && (
                   <TabsContent value="doctor">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium">김의사 원장</div>
-                          <CardDescription>2023-04-16</CardDescription>
+                    {comments
+                      ?.filter((c) => c.author === "DOCTOR")
+                      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                      .map((comment, idx, arr) => (
+                        <div key={comment.commentId} className={idx !== arr.length - 1 ? "mb-6" : ""}>
+                          <Card>
+                            <CardHeader className="pb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="font-medium">의료진</div>
+                                <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {Array.isArray(comment.imageUrls) && comment.imageUrls.length > 0 && (
+                                <div className="border rounded-md overflow-hidden">
+                                  {comment.imageUrls.map((url) => (
+                                    <Image
+                                      key={url}
+                                      src={url}
+                                      alt="의료진 주석 이미지"
+                                      width={600}
+                                      height={400}
+                                      className="w-full max-h-[400px] object-contain"
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                              <p className="whitespace-pre-line">{comment.content}</p>
+                            </CardContent>
+                          </Card>
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Example annotated image */}
-                        {post.postId === "1" && (
-                          <div className="border rounded-md overflow-hidden">
-                            <Image
-                              src="/placeholder.svg?height=400&width=600"
-                              alt="척추측만증 X-ray 주석"
-                              className="w-full max-h-[400px] object-contain"
-                            />
-                          </div>
-                        )}
-                        <p className="whitespace-pre-line">
-                          안녕하세요, 질문 감사합니다. 14세 청소년의 25도 콥스 각도는 일반적으로 즉각적인 수술이 필요한
-                          정도는 아닙니다. 보통 40-50도 이상일 때 수술을 고려하게 됩니다. 현재 상태에서는 보조기 착용이
-                          적절한 치료 방법입니다. 보스턴 브레이스나 샤르노 보조기 등이 많이 사용되며, 하루 18-23시간 착용을
-                          권장합니다. 위 X-ray 이미지에서 표시한 부분을 보시면 척추의 곡선이 정상 범위를 벗어나 있는 것을
-                          확인할 수 있습니다. 빨간색 선으로 표시한 부분이 비정상적인 각도를 나타내고 있습니다. 운동 치료로는
-                          슈로스 운동법이나 측만증에 특화된 물리치료가 효과적입니다. 수영(특히 배영)도 척추 주변 근육을 균형
-                          있게 발달시키는 데 도움이 됩니다. 정기적인 X-ray 검사를 통해 진행 상황을 모니터링하는 것이
-                          중요합니다. 6개월마다 검진을 받아보시길 권장합니다.
-                        </p>
-                      </CardContent>
-                    </Card>
+                    ))}
                   </TabsContent>
                 )}
 
@@ -347,32 +378,23 @@ export default function PostDetail({
 
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">댓글</h2>
-            {post.commentCount > 0 ? (
+            {comments && comments.filter((c) => c.author !== "DOCTOR" && c.author !== "AI").length > 0 ? (
               <div className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium">박지영</div>
-                      <CardDescription>2023-04-15</CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p>저도 비슷한 경험이 있어요. 보조기 착용이 처음에는 불편하지만 꾸준히 하니 효과가 있었습니다.</p>
-                  </CardContent>
-                </Card>
-                {post.commentCount > 1 && (
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="font-medium">이승훈</div>
-                        <CardDescription>2023-04-16</CardDescription>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p>슈로스 운동법 추천합니다. 저희 아이도 많은 도움이 되었어요.</p>
-                    </CardContent>
-                  </Card>
-                )}
+                {comments
+                  .filter((c) => c.author !== "DOCTOR" && c.author !== "AI")
+                  .map((comment) => (
+                    <Card key={comment.commentId}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium">{comment.author}</div>
+                          <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p>{comment.content}</p>
+                      </CardContent>
+                    </Card>
+                ))}
               </div>
             ) : (
               <p className="text-muted-foreground">아직 댓글이 없습니다.</p>
@@ -383,9 +405,53 @@ export default function PostDetail({
             <h2 className="text-xl font-semibold mb-4">댓글 작성</h2>
             <Card>
               <CardContent className="pt-6">
-                <Textarea placeholder="댓글을 입력하세요" className="mb-4" />
+                <Textarea
+                  placeholder="댓글을 입력하세요"
+                  className="mb-4"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
                 <div className="flex justify-end">
-                  <Button>댓글 등록</Button>
+                  <Button
+                    onClick={async () => {
+                      if (!newComment.trim()) return;
+                      try {
+                        const res = await fetch(`${baseUrl}/api/doctor/post/comment`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({
+                            postId,
+                            content: newComment.trim(),
+                          }),
+                        });
+
+                        if (!res.ok) throw new Error("댓글 등록 실패");
+
+                        const data = await res.json();
+                        setComments((prev) => [
+                          ...prev,
+                          {
+                            commentId: data.data.commentId,
+                            status: "NORMAL",
+                            content: newComment.trim(),
+                            author: "의료진",
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            imageUrls: [],
+                          },
+                        ]);
+                        setNewComment("");
+                      } catch (err) {
+                        console.error("댓글 등록 실패", err);
+                        alert("댓글 등록에 실패했습니다.");
+                      }
+                    }}
+                    className="bg-black text-white"
+                  >
+                    댓글 등록
+                  </Button>
                 </div>
               </CardContent>
             </Card>
