@@ -48,6 +48,9 @@ export default function PostDetail({
   const [passwordError, setPasswordError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
+  // AI feedback state
+  const [aiFeedbackSubmitted, setAiFeedbackSubmitted] = useState(false)
+
   const searchParams = useSearchParams()
   const router = useRouter();
   const passwordRef = React.useRef<string | null | undefined>(null);
@@ -70,6 +73,7 @@ export default function PostDetail({
       passwordRef.current = pw;
     }
     async function fetchPost() {
+      setIsLoading(true);
       const v = searchParams.get("visibility");
       if (v === null) {
         setIsLoading(false);
@@ -85,7 +89,6 @@ export default function PostDetail({
           return;
         }
         try {
-          setIsLoading(true);
           const url = `${baseUrl}/api/post/${id}/private`;
           const options = {
             method: "POST",
@@ -354,17 +357,17 @@ export default function PostDetail({
             )}
 
             {/* Display Answers with Images */}
-            {post.status === "DOCTOR_COMMENTED" || post.status === "AI_COMMENTED" ? (
-              <Tabs defaultValue={post.status === "DOCTOR_COMMENTED" ? "doctor" : "ai"} className="w-full">
+            {comments.some(c => c.author === "DOCTOR" || c.author === "AI") ? (
+              <Tabs defaultValue="doctor" className="w-full">
                 <TabsList className="mb-4">
-                  {post.status === "DOCTOR_COMMENTED" && <TabsTrigger value="doctor">의료진 답변</TabsTrigger>}
-                  {post.status === "AI_COMMENTED" && <TabsTrigger value="ai">AI 자동 답변</TabsTrigger>}
+                  <TabsTrigger value="doctor">의료진 답변</TabsTrigger>
+                  <TabsTrigger value="ai">AI 자동 답변</TabsTrigger>
                 </TabsList>
 
-                {post.status === "DOCTOR_COMMENTED" && (
-                  <TabsContent value="doctor">
-                    {comments
-                      ?.filter((c) => c.author === "DOCTOR")
+                <TabsContent value="doctor">
+                  {comments.filter(c => c.author === "DOCTOR").length > 0 ? (
+                    comments
+                      .filter(c => c.author === "DOCTOR")
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment, idx, arr) => (
                         <div key={comment.commentId} className={idx !== arr.length - 1 ? "mb-6" : ""}>
@@ -394,32 +397,87 @@ export default function PostDetail({
                             </CardContent>
                           </Card>
                         </div>
-                    ))}
-                  </TabsContent>
-                )}
+                      ))
+                  ) : (
+                    <p className="text-muted-foreground">아직 답변이 없습니다.</p>
+                  )}
+                </TabsContent>
 
-                {post.status === "AI_COMMENTED" && (
-                  <TabsContent value="ai">
-                    <Card className="border-blue-200 bg-blue-50">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium">AI 어시스턴트</div>
-                          <CardDescription>2023-04-02</CardDescription>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="whitespace-pre-line">
-                          안녕하세요, 척추측만증 검사에 관해 문의해 주셔서 감사합니다. 척추측만증 검사는 주로 X-ray 촬영을
-                          통해 이루어지며, 필요에 따라 MRI나 CT 검사가 추가될 수 있습니다. 기본 X-ray 검사 비용은 약 3-5만원
-                          정도이며, 건강보험이 적용됩니다. 다만, 추가 검사가 필요한 경우 비용이 더 발생할 수 있습니다.
-                          정확한 비용은 의료기관마다 차이가 있을 수 있으니, 방문 전 전화로 문의하시는 것이 좋습니다.
-                          본원에서는 초진 상담 시 자세한 검사 계획과 비용에 대해 안내해 드리고 있습니다. 이 답변은 AI가
-                          자동으로 생성한 것으로, 정확한 진단과 치료를 위해서는 전문의와의 상담을 권장합니다.
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                )}
+                <TabsContent value="ai">
+                  {comments.filter(c => c.author === "AI").length > 0 ? (
+                    comments
+                      .filter((c) => c.author === "AI")
+                      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                      .map((comment) => (
+                        <Card key={comment.commentId}>
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium">AI 어시스턴트</div>
+                              <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="whitespace-pre-line">{comment.content}</p>
+                            <div className="mt-6">
+                              {aiFeedbackSubmitted ? (
+                                <p className="text-sm text-green-600">피드백이 성공적으로 제출되었습니다. 감사합니다!</p>
+                              ) : (
+                                <>
+                                  <p className="text-sm text-gray-600 mb-2">이 답변이 도움이 되었나요?</p>
+                                  <div className="flex gap-3">
+                                    <Button
+                                      variant="outline"
+                                      onClick={async () => {
+                                        try {
+                                          await fetch(`${baseUrl}/api/doctor/post/comment/status`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              commentId: comment.commentId,
+                                              status: "SOLVED",
+                                            }),
+                                          });
+                                          setAiFeedbackSubmitted(true);
+                                        } catch (err) {
+                                          console.error("피드백 등록 실패:", err);
+                                          alert("피드백 등록에 실패했습니다.");
+                                        }
+                                      }}
+                                    >
+                                      👍 네, 만족스러웠어요
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      onClick={async () => {
+                                        try {
+                                          await fetch(`${baseUrl}/api/doctor/post/comment/status`, {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                              commentId: comment.commentId,
+                                              status: "UNSOLVED",
+                                            }),
+                                          });
+                                          setAiFeedbackSubmitted(true);
+                                        } catch (err) {
+                                          console.error("피드백 등록 실패:", err);
+                                          alert("피드백 등록에 실패했습니다.");
+                                        }
+                                      }}
+                                    >
+                                      👎 아니요, 부족했어요
+                                    </Button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                  ) : (
+                    <p className="text-muted-foreground">아직 답변이 없습니다.</p>
+                  )}
+                </TabsContent>
               </Tabs>
             ) : (
               <p className="text-muted-foreground">아직 답변이 없습니다.</p>
