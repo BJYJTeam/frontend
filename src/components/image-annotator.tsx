@@ -333,12 +333,3 @@ export function ImageAnnotator({ onImageChange }: ImageAnnotatorProps) {
     </div>
   )
 }
-
-/*
-<style jsx global>{`
-  .slider-black-thumb .\[data-radix-slider-thumb\] {
-    background-color: #000 !important;
-    border-color: #000 !important;
-  }
-`}</style>
-*/
