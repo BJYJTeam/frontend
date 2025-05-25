@@ -7,7 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Calendar, MessageCircle, User, ImageIcon } from "lucide-react"
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
@@ -45,47 +45,97 @@ export default function PostDetail({
   const postId = id
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
-  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
+  const [passwordError, setPasswordError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const searchParams = useSearchParams()
+  const router = useRouter();
+  const passwordRef = React.useRef<string | null | undefined>(null);
+
   useEffect(() => {
-    const v = searchParams.get("visibility")
-    if (v === "PRIVATE") {
-      setVisibility("PRIVATE")
+    // Only prompt for password if needed
+    if (searchParams.get("visibility") === "PRIVATE" && passwordRef.current === null) {
+      if (passwordError) {
+        alert("비밀번호가 올바르지 않습니다.");
+        setPasswordError(false);
+        // Do not retry, do not redirect, just stay on the page
+        return;
+      }
+      const pw = prompt("비밀번호를 입력하세요");
+      if (!pw) {
+        passwordRef.current = undefined;
+        router.replace("/");
+        return;
+      }
+      passwordRef.current = pw;
     }
-  }, [searchParams])
-
-  useEffect(() => {
     async function fetchPost() {
-      try {
-        const url =
-          visibility === "PRIVATE"
-            ? `${baseUrl}/api/post/${id}/private`
-            : `${baseUrl}/api/post/${id}/public`;
-        const options =
-          visibility === "PRIVATE"
-            ? {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ password: prompt("비밀번호를 입력하세요") }),
-              }
-            : undefined;
-
-        const res = await fetch(url, options);
-        if (!res.ok) throw new Error("Failed to fetch post detail");
-        const data = await res.json();
-        const { post, comments } = data.data;
-        setPost(post);
-        setComments(comments);
-      } catch (err) {
-        console.warn("Falling back to mock data due to error:", err);
-        const fallback = posts.find((p) => p.postId === id) || posts[0];
-        setPost(fallback);
-        setComments([]); // fallback: no comments
+      const v = searchParams.get("visibility");
+      if (v === null) {
+        setIsLoading(false);
+        return;
+      }
+      if (v === "PRIVATE") {
+        if (passwordRef.current === undefined) {
+          setIsLoading(false);
+          return;
+        }
+        if (passwordRef.current === null) {
+          setIsLoading(false);
+          return;
+        }
+        try {
+          setIsLoading(true);
+          const url = `${baseUrl}/api/post/${id}/private`;
+          const options = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: passwordRef.current }),
+          };
+          const res = await fetch(url, options);
+          if (!res.ok) {
+            passwordRef.current = null; // triggers prompt again
+            setPasswordError(true);
+            setIsLoading(false);
+            return;
+          }
+          const data = await res.json();
+          const { post, comments } = data.data;
+          setPost(post);
+          setComments(comments);
+        } catch (err) {
+          passwordRef.current = undefined;
+          router.replace("/");
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+      if (v === "PUBLIC") {
+        try {
+          const url = `${baseUrl}/api/post/${id}/public`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Failed to fetch post detail");
+          const data = await res.json();
+          const { post, comments } = data.data;
+          setPost(post);
+          setComments(comments);
+        } catch (err) {
+          const fallback = posts.find((p) => p.postId === id) || posts[0];
+          setPost(fallback);
+          setComments([]);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
       }
     }
-    fetchPost();
-  }, [id, visibility]);
+
+    if (passwordRef.current !== undefined) {
+      fetchPost();
+    }
+  }, [id, searchParams, passwordError]);
 
   const [showAnswerForm, setShowAnswerForm] = useState(false)
   const [answerType, setAnswerType] = useState("doctor")
@@ -457,9 +507,9 @@ export default function PostDetail({
             </Card>
           </div>
         </div>
-      ) : (
+      ) : isLoading ? (
         <p>로딩 중입니다...</p>
-      )}
+      ) : null}
     </>
   )
 }
