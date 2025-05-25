@@ -211,7 +211,7 @@ export default function PostDetail({
           author: answerType === "doctor" ? "DOCTOR" : "AI",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          imageUrls: annotatedImage ? [""] : [], // Optional: update with actual URL if image upload returns one
+          imageUrls: annotatedImage ? [annotatedImage] : [],
         },
       ]);
     } catch (error) {
@@ -391,18 +391,20 @@ export default function PostDetail({
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                              {Array.isArray(comment.imageUrls) && comment.imageUrls.length > 0 && (
+                              {Array.isArray(comment.imageUrls) && comment.imageUrls.filter((url) => url && url.trim() !== "").length > 0 && (
                                 <div className="border rounded-md overflow-hidden">
-                                  {comment.imageUrls.map((url) => (
-                                    <Image
-                                      key={url}
-                                      src={url}
-                                      alt="의료진 주석 이미지"
-                                      width={600}
-                                      height={400}
-                                      className="w-full max-h-[400px] object-contain"
-                                    />
-                                  ))}
+                                  {comment.imageUrls
+                                    .filter((url) => url && url.trim() !== "")
+                                    .map((url) => (
+                                      <Image
+                                        key={url}
+                                        src={url}
+                                        alt="의료진 주석 이미지"
+                                        width={600}
+                                        height={400}
+                                        className="w-full max-h-[400px] object-contain"
+                                      />
+                                    ))}
                                 </div>
                               )}
                               <p className="whitespace-pre-line">{comment.content}</p>
