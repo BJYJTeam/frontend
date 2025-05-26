@@ -40,6 +40,8 @@ export default function QnABoard() {
   }, [currentPage, searchQuery, selectedTags])
 
   const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
+  // Hardcoded sample tags for testing purposes
+  // const allTags = ["허리통증", "자세", "운동", "치료", "수술"]
 
   const filterQuestionsByTags = (questionsToFilter: Post[]) => {
     if (selectedTags.length === 0) return questionsToFilter
@@ -109,12 +111,17 @@ export default function QnABoard() {
               {tag}
             </Badge>
           ))}
-          {selectedTags.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearTags} className="h-6 px-2 text-xs flex items-center">
-              <X className="h-3 w-3 mr-1" />
-              필터 초기화
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearTags}
+            className={`h-6 px-2 text-xs flex items-center transition-opacity duration-200 ${
+              selectedTags.length > 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <X className="h-3 w-3 mr-1" />
+            필터 초기화
+          </Button>
         </div>
       </div>
 
