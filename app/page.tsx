@@ -14,6 +14,8 @@ import { Post, PostListResponse } from "@/post_api_types"
 export default function QnABoard() {
   const [questions, setQuestions] = useState<Post[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchInput, setSearchInput] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(1)
 
@@ -22,7 +24,9 @@ export default function QnABoard() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=${currentPage}&size=10&postStatus=ALL`)
+        const tagParams = selectedTags.map((tag) => `keywords=${encodeURIComponent(tag)}`).join("&")
+        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
+        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=${currentPage}&size=10${tagParams ? `&${tagParams}` : ""}${queryParam}&postStatus=ALL`)
         if (!res.ok) throw new Error("Failed to fetch posts")
         const data: PostListResponse = await res.json()
         setQuestions(data.data.posts)
@@ -33,7 +37,7 @@ export default function QnABoard() {
     }
 
     fetchPosts()
-  }, [currentPage])
+  }, [currentPage, searchQuery, selectedTags])
 
   const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
 
@@ -58,9 +62,33 @@ export default function QnABoard() {
           <p className="text-muted-foreground mt-1">척추측만증에 관한 질문을 남겨주시면 전문의가 답변해 드립니다.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-[300px]">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="검색어를 입력하세요" className="w-full pl-8 border border-gray-200 focus:border-black focus:ring-0" />
+          <div className="relative w-full md:w-[300px] flex">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="검색어를 입력하세요"
+                className="w-full pl-8 border border-gray-200 focus:border-black focus:ring-0"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearchQuery(searchInput)
+                    setCurrentPage(1)
+                  }
+                }}
+              />
+            </div>
+            <Button
+              variant="outline"
+              className="ml-2"
+              onClick={() => {
+                setSearchQuery(searchInput)
+                setCurrentPage(1)
+              }}
+            >
+              검색
+            </Button>
           </div>
           <Button className="bg-black text-white">
             <Link href="/questions/new">질문하기</Link>

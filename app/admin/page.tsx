@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function AdminDashboard() {
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-  const [questions, setQuestions] = useState<Post[]>([])
   const [sortBy, setSortBy] = useState("newest")
   const [totalCount, setTotalCount] = useState(0)
   const [commentedCount, setCommentedCount] = useState(0)
@@ -35,13 +34,16 @@ export default function AdminDashboard() {
   const [unansweredPage, setUnansweredPage] = useState(1)
   const [unansweredTotalPage, setUnansweredTotalPage] = useState(1)
   const [unansweredPaginatedQuestions, setUnansweredPaginatedQuestions] = useState<Post[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchInput, setSearchInput] = useState("")
 
   // Fetch paginated questions for 전체 질문
   useEffect(() => {
     async function fetchAllQuestions() {
       try {
+        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
         const res = await fetch(
-          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${allPage}&size=10&postStatus=ALL`
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${allPage}&size=10&postStatus=ALL${queryParam}`
         )
         if (!res.ok) throw new Error("Failed to fetch posts")
         const data: DoctorPostListResponse = await res.json()
@@ -52,14 +54,15 @@ export default function AdminDashboard() {
       }
     }
     fetchAllQuestions()
-  }, [allPage, baseUrl])
+  }, [allPage, baseUrl, searchQuery])
 
   // Fetch paginated answered questions
   useEffect(() => {
     async function fetchAnsweredQuestions() {
       try {
+        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
         const res = await fetch(
-          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${answeredPage}&size=10&postStatus=DOCTOR_COMMENTED`
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${answeredPage}&size=10&postStatus=DOCTOR_COMMENTED${queryParam}`
         )
         if (!res.ok) throw new Error("Failed to fetch answered posts")
         const data: DoctorPostListResponse = await res.json()
@@ -70,14 +73,15 @@ export default function AdminDashboard() {
       }
     }
     fetchAnsweredQuestions()
-  }, [answeredPage, baseUrl])
+  }, [answeredPage, baseUrl, searchQuery])
 
   // Fetch paginated AI answered questions
   useEffect(() => {
     async function fetchAiQuestions() {
       try {
+        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
         const res = await fetch(
-          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${aiPage}&size=10&postStatus=AI_COMMENTED`
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${aiPage}&size=10&postStatus=AI_COMMENTED${queryParam}`
         )
         if (!res.ok) throw new Error("Failed to fetch AI answered posts")
         const data: DoctorPostListResponse = await res.json()
@@ -88,14 +92,15 @@ export default function AdminDashboard() {
       }
     }
     fetchAiQuestions()
-  }, [aiPage, baseUrl])
+  }, [aiPage, baseUrl, searchQuery])
 
   // Fetch paginated unanswered questions
   useEffect(() => {
     async function fetchUnansweredQuestions() {
       try {
+        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
         const res = await fetch(
-          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${unansweredPage}&size=10&postStatus=NORMAL`
+          `${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=${unansweredPage}&size=10&postStatus=NORMAL${queryParam}`
         )
         if (!res.ok) throw new Error("Failed to fetch unanswered posts")
         const data: DoctorPostListResponse = await res.json()
@@ -106,22 +111,8 @@ export default function AdminDashboard() {
       }
     }
     fetchUnansweredQuestions()
-  }, [unansweredPage, baseUrl])
+  }, [unansweredPage, baseUrl, searchQuery])
 
-  // Fetch questions from backend
-  useEffect(() => {
-    async function fetchQuestions() {
-      try {
-        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/doctor/post/list?page=1&size=1000&postStatus=ALL`)
-        if (!res.ok) throw new Error("Failed to fetch posts")
-        const data: DoctorPostListResponse = await res.json()
-        setQuestions(data.data.posts)
-      } catch (err) {
-        console.error("Failed to fetch questions:", err)
-      }
-    }
-    fetchQuestions()
-  }, [])
 
   // Fetch post status counts
   useEffect(() => {
@@ -140,20 +131,6 @@ export default function AdminDashboard() {
     fetchStatusCounts()
   }, [])
 
-  // Sort questions based on selected option
-  const sortedQuestions = [...questions].sort((a, b) => {
-    if (sortBy === "newest") {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    } else if (sortBy === "oldest") {
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    }
-    return 0
-  })
-
-  // Filter unanswered questions
-  const unansweredQuestions = sortedQuestions.filter(
-    (q) => q.status !== "DOCTOR_COMMENTED" && q.status !== "AI_COMMENTED"
-  )
 
   // Sort allQuestions for pagination tab
   const sortedAllQuestions = [...allQuestions].sort((a, b) => {
@@ -173,10 +150,28 @@ export default function AdminDashboard() {
           <p className="text-muted-foreground mt-1">질문 관리 및 답변 작성을 할 수 있습니다.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-[300px]">
+          <div className="relative w-full md:w-[300px] flex">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="질문 검색" className="w-full pl-8" />
+            <Input
+              type="search"
+              placeholder="질문 검색"
+              className="w-full pl-8"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setSearchQuery(searchInput)
+                }
+              }}
+            />
+            <Button
+              onClick={() => setSearchQuery(searchInput)}
+              className="px-4 ml-2"
+            >
+              검색
+            </Button>
           </div>
+          {/*
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="정렬 기준" />
@@ -186,6 +181,7 @@ export default function AdminDashboard() {
               <SelectItem value="oldest">오래된순</SelectItem>
             </SelectContent>
           </Select>
+          */}
         </div>
       </div>
 
