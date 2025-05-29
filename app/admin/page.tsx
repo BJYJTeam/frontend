@@ -165,6 +165,7 @@ export default function AdminDashboard() {
               }}
             />
             <Button
+              variant="outline"
               onClick={() => setSearchQuery(searchInput)}
               className="px-4 ml-2"
             >
