@@ -113,7 +113,7 @@ export default function NewQuestion() {
         </Link>
       </Button>
 
-      <Card>
+      <Card className="border border-gray-300">
         <CardHeader>
           <CardTitle>질문 작성하기</CardTitle>
           <CardDescription>척추측만증에 관한 질문을 남겨주시면 전문의가 답변해 드립니다.</CardDescription>
@@ -129,6 +129,7 @@ export default function NewQuestion() {
                 value={formData.title}
                 onChange={handleChange}
                 required
+                className="border border-gray-300"
               />
             </div>
             <div className="space-y-2">
@@ -137,7 +138,7 @@ export default function NewQuestion() {
                 id="content"
                 name="content"
                 placeholder="질문 내용을 자세히 입력해주세요"
-                className="min-h-[200px]"
+                className="border border-gray-300 min-h-[200px]"
                 value={formData.content}
                 onChange={handleChange}
                 required
@@ -198,6 +199,7 @@ export default function NewQuestion() {
                   value={formData.author}
                   onChange={handleChange}
                   required
+                  className="border border-gray-300"
                 />
               </div>
               <div className="space-y-2">
@@ -210,6 +212,7 @@ export default function NewQuestion() {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  className="border border-gray-300"
                 />
               </div>
             </div>

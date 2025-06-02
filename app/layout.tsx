@@ -24,6 +24,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
                     홈
                   </Link>
+                  <Link href="/faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                    FAQ
+                  </Link>
                   <Link
                     href="/admin"
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"

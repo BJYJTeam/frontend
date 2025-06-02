@@ -50,6 +50,8 @@ export default function PostDetail({
 
   // AI feedback state
   const [aiFeedbackSubmitted, setAiFeedbackSubmitted] = useState(false)
+  const [showUserFeedbackForm, setShowUserFeedbackForm] = useState(false)
+  const [userFeedbackContent, setUserFeedbackContent] = useState("")
 
   const searchParams = useSearchParams()
   const router = useRouter();
@@ -149,6 +151,22 @@ export default function PostDetail({
   const [isSubmitting, setIsSubmitting] = useState(false)
   // State for handling new comment input
   const [newComment, setNewComment] = useState("");
+
+  // Inject dummy AI answer if there are no comments after loading
+  useEffect(() => {
+    if (!isLoading && post && comments.length === 0) {
+      const dummyAIComment = {
+        commentId: "dummy-ai-" + Date.now(),
+        status: "NORMAL" as const,
+        content: "이 답변은 AI가 자동으로 생성한 예시입니다.",
+        author: "AI",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        imageUrls: [],
+      };
+      setComments([dummyAIComment]);
+    }
+  }, [isLoading, post, comments.length]);
 
   // In a real application, this would be determined by authentication
   const isStaff = true // Simulating that the current user is staff
@@ -472,7 +490,7 @@ export default function PostDetail({
                                               status: "UNSOLVED",
                                             }),
                                           });
-                                          setAiFeedbackSubmitted(true);
+                                          setShowUserFeedbackForm(true);
                                         } catch (err) {
                                           console.error("피드백 등록 실패:", err);
                                           alert("피드백 등록에 실패했습니다.");
@@ -482,6 +500,41 @@ export default function PostDetail({
                                       👎 아니요, 부족했어요
                                     </Button>
                                   </div>
+                                  {showUserFeedbackForm && (
+                                    <div className="mt-4 space-y-2">
+                                      <Textarea
+                                        placeholder="어떤 점이 부족했는지 알려주세요"
+                                        value={userFeedbackContent}
+                                        onChange={(e) => setUserFeedbackContent(e.target.value)}
+                                      />
+                                      <div className="flex justify-end">
+                                        <Button
+                                          onClick={async () => {
+                                            if (!userFeedbackContent.trim()) return;
+                                            try {
+                                              const res = await fetch(`${baseUrl}/api/doctor/post/comment`, {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({
+                                                  postId,
+                                                  content: userFeedbackContent.trim(),
+                                                  author: "USER",  
+                                                }),
+                                              });
+                                              if (!res.ok) throw new Error("피드백 댓글 등록 실패");
+                                              setAiFeedbackSubmitted(true);
+                                            } catch (err) {
+                                              console.error("피드백 댓글 등록 실패", err);
+                                              alert("피드백 등록에 실패했습니다.");
+                                            }
+                                          }}
+                                          className="bg-black text-white"
+                                        >
+                                          피드백 제출
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </>
                               )}
                             </div>
