@@ -389,7 +389,7 @@ export default function PostDetail({
             {/* Display Answers with Images */}
             {comments.some(c => c.author === "DOCTOR" || c.author === "AI") ? (
               <Tabs defaultValue="doctor" className="w-full">
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 bg-gray-100 rounded-lg p-1 flex gap-0 w-fit">
                   <TabsTrigger value="doctor">의료진 답변</TabsTrigger>
                   <TabsTrigger value="ai">AI 자동 답변</TabsTrigger>
                 </TabsList>
