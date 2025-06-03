@@ -20,16 +20,16 @@ export default function FAQPage() {
   useEffect(() => {
     async function fetchFaqs() {
       try {
-        const res = await fetch(`${baseUrl}/api/faq`)
+        const res = await fetch(`${baseUrl}/api/post/list?postStatus=ALL`);
         if (res.ok) {
-          const data = await res.json()
-          setApiFaqItems(data)
+          const data = await res.json();
+          setApiFaqItems(data.result.faqPosts);
         }
       } catch (error) {
-        console.error("Failed to fetch FAQs from API:", error)
+        console.error("Failed to fetch FAQs from API:", error);
       }
     }
-    fetchFaqs()
+    fetchFaqs();
   }, [])
 
   // Toggle expanded state for FAQ items

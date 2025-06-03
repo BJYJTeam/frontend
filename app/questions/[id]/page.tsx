@@ -461,7 +461,7 @@ export default function PostDetail({
                                       variant="outline"
                                       onClick={async () => {
                                         try {
-                                          await fetch(`${baseUrl}/api/doctor/post/comment/status`, {
+                                          await fetch(`${baseUrl}/api/post/comment`, {
                                             method: "POST",
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({
@@ -482,7 +482,7 @@ export default function PostDetail({
                                       variant="outline"
                                       onClick={async () => {
                                         try {
-                                          await fetch(`${baseUrl}/api/doctor/post/comment/status`, {
+                                          await fetch(`${baseUrl}/api/post/comment`, {
                                             method: "POST",
                                             headers: { "Content-Type": "application/json" },
                                             body: JSON.stringify({
@@ -512,17 +512,29 @@ export default function PostDetail({
                                           onClick={async () => {
                                             if (!userFeedbackContent.trim()) return;
                                             try {
-                                              const res = await fetch(`${baseUrl}/api/doctor/post/comment`, {
+                                              const res = await fetch(`${baseUrl}/api/post/comment`, {
                                                 method: "POST",
                                                 headers: { "Content-Type": "application/json" },
                                                 body: JSON.stringify({
                                                   postId,
                                                   content: userFeedbackContent.trim(),
-                                                  author: "USER",  
                                                 }),
                                               });
                                               if (!res.ok) throw new Error("피드백 댓글 등록 실패");
                                               setAiFeedbackSubmitted(true);
+                                              const data = await res.json();
+                                              setComments((prev) => [
+                                                ...prev,
+                                                {
+                                                  commentId: data.data.commentId,
+                                                  status: "NORMAL",
+                                                  content: userFeedbackContent.trim(),
+                                                  author: "USER",
+                                                  createdAt: new Date().toISOString(),
+                                                  updatedAt: new Date().toISOString(),
+                                                  imageUrls: [],
+                                                },
+                                              ]);
                                             } catch (err) {
                                               console.error("피드백 댓글 등록 실패", err);
                                               alert("피드백 등록에 실패했습니다.");
@@ -591,11 +603,9 @@ export default function PostDetail({
                     onClick={async () => {
                       if (!newComment.trim()) return;
                       try {
-                        const res = await fetch(`${baseUrl}/api/doctor/post/comment`, {
+                        const res = await fetch(`${baseUrl}/api/post/comment`, {
                           method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
+                          headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
                             postId,
                             content: newComment.trim(),
@@ -611,7 +621,7 @@ export default function PostDetail({
                             commentId: data.data.commentId,
                             status: "NORMAL",
                             content: newComment.trim(),
-                            author: "의료진",
+                            author: "USER",
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString(),
                             imageUrls: [],
