@@ -36,9 +36,11 @@ export default function AdminDashboard() {
   const [unansweredPaginatedQuestions, setUnansweredPaginatedQuestions] = useState<Post[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [searchInput, setSearchInput] = useState("")
+  const [currentTab, setCurrentTab] = useState("unanswered")
 
   // Fetch paginated questions for 전체 질문
   useEffect(() => {
+    if (currentTab !== "all") return
     async function fetchAllQuestions() {
       try {
         const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
@@ -54,10 +56,11 @@ export default function AdminDashboard() {
       }
     }
     fetchAllQuestions()
-  }, [allPage, baseUrl, searchQuery])
+  }, [allPage, baseUrl, searchQuery, currentTab])
 
   // Fetch paginated answered questions
   useEffect(() => {
+    if (currentTab !== "answered") return
     async function fetchAnsweredQuestions() {
       try {
         const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
@@ -73,10 +76,11 @@ export default function AdminDashboard() {
       }
     }
     fetchAnsweredQuestions()
-  }, [answeredPage, baseUrl, searchQuery])
+  }, [answeredPage, baseUrl, searchQuery, currentTab])
 
   // Fetch paginated AI answered questions
   useEffect(() => {
+    if (currentTab !== "ai-answered") return
     async function fetchAiQuestions() {
       try {
         const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
@@ -92,10 +96,11 @@ export default function AdminDashboard() {
       }
     }
     fetchAiQuestions()
-  }, [aiPage, baseUrl, searchQuery])
+  }, [aiPage, baseUrl, searchQuery, currentTab])
 
   // Fetch paginated unanswered questions
   useEffect(() => {
+    if (currentTab !== "unanswered") return
     async function fetchUnansweredQuestions() {
       try {
         const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
@@ -111,7 +116,7 @@ export default function AdminDashboard() {
       }
     }
     fetchUnansweredQuestions()
-  }, [unansweredPage, baseUrl, searchQuery])
+  }, [unansweredPage, baseUrl, searchQuery, currentTab])
 
 
   // Fetch post status counts
@@ -187,7 +192,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card className="border border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">총 질문</CardTitle>
           </CardHeader>
@@ -195,7 +200,7 @@ export default function AdminDashboard() {
             <p className="text-3xl font-bold">{totalCount}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">답변 완료</CardTitle>
           </CardHeader>
@@ -203,7 +208,7 @@ export default function AdminDashboard() {
             <p className="text-3xl font-bold">{commentedCount}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-gray-300">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">미답변</CardTitle>
           </CardHeader>
@@ -213,12 +218,36 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <Tabs defaultValue="unanswered" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="unanswered">미답변 질문</TabsTrigger>
-          <TabsTrigger value="all">전체 질문</TabsTrigger>
-          <TabsTrigger value="answered">답변 완료</TabsTrigger>
-          <TabsTrigger value="ai-answered">AI 답변</TabsTrigger>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} defaultValue="unanswered" className="w-full">
+        <TabsList className="mb-4 bg-gray-100 rounded-lg p-1 flex gap-0 w-fit">
+          <TabsTrigger
+            value="unanswered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            미답변 질문
+          </TabsTrigger>
+          <TabsTrigger
+            value="all"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            전체 질문
+          </TabsTrigger>
+          <TabsTrigger
+            value="answered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            답변 완료
+          </TabsTrigger>
+          <TabsTrigger
+            value="ai-answered"
+            className="tab-trigger rounded-md transition-colors px-3 py-1.5 focus:z-10 relative"
+            style={{ marginLeft: 0, marginRight: 0 }}
+          >
+            AI 답변
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="unanswered" className="space-y-4">
@@ -232,6 +261,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={unansweredPage === 1}
               onClick={() => setUnansweredPage((p) => Math.max(1, p - 1))}
             >
@@ -258,6 +288,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={unansweredPage === unansweredTotalPage}
               onClick={() => setUnansweredPage((p) => Math.min(unansweredTotalPage, p + 1))}
             >
@@ -279,6 +310,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={allPage === 1}
               onClick={() => setAllPage((p) => Math.max(1, p - 1))}
             >
@@ -306,6 +338,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={allPage === allTotalPage}
               onClick={() => setAllPage((p) => Math.min(allTotalPage, p + 1))}
             >
@@ -327,6 +360,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={answeredPage === 1}
               onClick={() => setAnsweredPage((p) => Math.max(1, p - 1))}
             >
@@ -353,6 +387,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={answeredPage === answeredTotalPage}
               onClick={() => setAnsweredPage((p) => Math.min(answeredTotalPage, p + 1))}
             >
@@ -374,6 +409,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={aiPage === 1}
               onClick={() => setAiPage((p) => Math.max(1, p - 1))}
             >
@@ -400,6 +436,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               size="sm"
+              className="border-gray-300"
               disabled={aiPage === aiTotalPage}
               onClick={() => setAiPage((p) => Math.min(aiTotalPage, p + 1))}
             >
@@ -423,7 +460,7 @@ function AdminQuestionCard({ question }: { question: Post }) {
   const formattedDate = `${yyyy}-${MM}-${dd} ${HH}:${mm}`
 
   return (
-    <Card>
+    <Card className="border border-gray-300">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">
@@ -432,11 +469,11 @@ function AdminQuestionCard({ question }: { question: Post }) {
             </Link>
           </CardTitle>
           {question.status === "DOCTOR_COMMENTED" ? (
-            <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+            <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white">
               답변완료
             </Badge>
           ) : question.status === "AI_COMMENTED" ? (
-            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
+            <Badge variant="default" className="bg-blue-500 hover:bg-blue-600 text-white">
               AI 답변
             </Badge>
           ) : (
@@ -469,11 +506,15 @@ function AdminQuestionCard({ question }: { question: Post }) {
         </div>
       </CardContent>
       <CardFooter className="flex justify-end pt-0">
-        <Button variant="outline" size="sm" asChild className="mr-2">
+        <Button variant="outline" size="sm" asChild className="mr-2 border-gray-300">
           <Link href={`/questions/${question.postId}`}>상세보기</Link>
         </Button>
-        {question.status !== "DOCTOR_COMMENTED" && question.status !== "AI_COMMENTED" && (
-          <Button size="sm" asChild>
+        {question.status !== "DOCTOR_COMMENTED" && (
+          <Button
+            size="sm"
+            asChild
+            className="bg-black text-white hover:bg-black/90"
+          >
             <Link href={`/questions/${question.postId}`}>답변하기</Link>
           </Button>
         )}

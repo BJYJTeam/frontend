@@ -18,26 +18,35 @@ export default function QnABoard() {
   const [searchInput, setSearchInput] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(1)
+  const [currentTab, setCurrentTab] = useState("all")
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const tagParams = selectedTags.map((tag) => `keywords=${encodeURIComponent(tag)}`).join("&")
-        const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
-        const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=${currentPage}&size=10${tagParams ? `&${tagParams}` : ""}${queryParam}&postStatus=ALL`)
-        if (!res.ok) throw new Error("Failed to fetch posts")
-        const data: PostListResponse = await res.json()
-        setQuestions(data.data.posts)
-        setTotalPage(data.data.totalPage)
-      } catch (err) {
-        console.error("Failed to fetch posts from backend:", err)
-      }
-    }
+  const statusMap: Record<string, string> = {
+    all: "ALL",
+    unanswered: "NORMAL",
+    answered: "DOCTOR_COMMENTED",
+    "ai-answered": "AI_COMMENTED",
+  }
 
-    fetchPosts()
-  }, [currentPage, searchQuery, selectedTags])
+  useEffect(() => {
+    fetchPosts(currentTab, currentPage)
+  }, [currentPage, searchQuery, selectedTags, currentTab])
+
+  async function fetchPosts(tabKey: string, page: number = 1) {
+    const status = statusMap[tabKey] || "ALL"
+    try {
+      const tagParams = selectedTags.map((tag) => `keywords=${encodeURIComponent(tag)}`).join("&")
+      const queryParam = searchQuery ? `&searchQuery=${encodeURIComponent(searchQuery)}` : ""
+      const res = await fetch(`${baseUrl || "http://localhost:8080"}/api/post/list?page=${page}&size=10${tagParams ? `&${tagParams}` : ""}${queryParam}&postStatus=${status}`)
+      if (!res.ok) throw new Error("Failed to fetch posts")
+      const data: PostListResponse = await res.json()
+      setQuestions(data.data.posts)
+      setTotalPage(data.data.totalPage)
+    } catch (err) {
+      console.error("Failed to fetch posts from backend:", err)
+    }
+  }
 
   const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
   // Hardcoded sample tags for testing purposes
@@ -125,7 +134,10 @@ export default function QnABoard() {
         </div>
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={currentTab} onValueChange={(val) => {
+        setCurrentTab(val)
+        setCurrentPage(1)
+      }} className="w-full">
         <TabsList className="mb-4 bg-gray-100 rounded-lg p-1 flex gap-0 w-fit">
           <TabsTrigger
             value="all"
@@ -156,11 +168,11 @@ export default function QnABoard() {
             미답변
           </TabsTrigger>
         </TabsList>
-
-        {renderTabContent("all", questions)}
+        {renderTabContent(currentTab, questions)}
+        {/* {renderTabContent("all", questions)}
         {renderTabContent("answered", questions.filter((q) => q.status === "DOCTOR_COMMENTED"))}
         {renderTabContent("ai-answered", questions.filter((q) => q.status === "AI_COMMENTED"))}
-        {renderTabContent("unanswered", questions.filter((q) => q.status === "NORMAL"))}
+        {renderTabContent("unanswered", questions.filter((q) => q.status === "NORMAL"))} */}
       </Tabs>
 
       <div className="flex justify-center mt-8">
@@ -168,7 +180,7 @@ export default function QnABoard() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border border-gray-300"
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
           >
@@ -178,7 +190,7 @@ export default function QnABoard() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border border-gray-300"
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
@@ -196,7 +208,7 @@ export default function QnABoard() {
                   key={pageNumber}
                   variant={pageNumber === currentPage ? "default" : "outline"}
                   size="icon"
-                  className={`h-8 w-8 ${pageNumber === currentPage ? "bg-black text-white" : ""}`}
+                  className={`h-8 w-8 border border-gray-300 ${pageNumber === currentPage ? "bg-black text-white" : ""}`}
                   onClick={() => setCurrentPage(pageNumber)}
                 >
                   {pageNumber}
@@ -209,7 +221,7 @@ export default function QnABoard() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border border-gray-300"
             onClick={() => setCurrentPage((prev) => Math.min(totalPage, prev + 1))}
             disabled={currentPage === totalPage}
           >
@@ -219,7 +231,7 @@ export default function QnABoard() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 border border-gray-300"
             onClick={() => setCurrentPage(totalPage)}
             disabled={currentPage === totalPage}
           >
