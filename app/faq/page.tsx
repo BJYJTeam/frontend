@@ -12,8 +12,6 @@ import { faqItems } from "@/lib/faq-data"
 export default function FAQPage() {
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [apiFaqItems, setApiFaqItems] = useState<typeof faqItems | null>(null)
 
