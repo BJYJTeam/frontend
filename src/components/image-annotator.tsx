@@ -212,7 +212,7 @@ export function ImageAnnotator({ onImageChange }: ImageAnnotatorProps) {
   }
 
   return (
-    <div className="border rounded-md p-4 space-y-4">
+    <div className="border rounded-md p-4 space-y-4 border-gray-300">
       <div className="flex flex-wrap gap-2 justify-between items-center">
         <h3 className="text-lg font-medium">이미지 업로드 및 주석</h3>
         <div className="flex gap-2">
@@ -231,7 +231,7 @@ export function ImageAnnotator({ onImageChange }: ImageAnnotatorProps) {
       </div>
       {image ? (
         <div className="space-y-4">
-          <div className="border rounded-md overflow-hidden">
+          <div className="border rounded-md overflow-hidden border-gray-300">
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}
@@ -322,7 +322,7 @@ export function ImageAnnotator({ onImageChange }: ImageAnnotatorProps) {
           </div>
         </div>
       ) : (
-        <div className="border rounded-md flex items-center justify-center bg-muted/20 h-[300px]">
+        <div className="border rounded-md flex items-center justify-center border-gray-300 h-[300px]">
           <div className="text-center">
             <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
             <p className="text-muted-foreground mt-2">이미지를 업로드하세요</p>

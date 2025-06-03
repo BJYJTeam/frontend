@@ -255,11 +255,11 @@ export default function PostDetail({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{post.title}</h1>
               {post.status === "DOCTOR_COMMENTED" ? (
-                <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                <Badge variant="default" className="text-white bg-green-500 hover:bg-green-600">
                   답변완료
                 </Badge>
               ) : post.status === "AI_COMMENTED" ? (
-                <Badge variant="default" className="bg-blue-500 hover:bg-blue-600">
+                <Badge variant="default" className="text-white bg-blue-500 hover:bg-blue-600">
                   AI 답변
                 </Badge>
               ) : (
@@ -292,7 +292,7 @@ export default function PostDetail({
             </div>
           </div>
 
-          <Card className="mb-8">
+          <Card className="mb-8 border-gray-300">
             <CardContent className="pt-6">
               <p className="whitespace-pre-line">{post.content}</p>
             </CardContent>
@@ -307,7 +307,7 @@ export default function PostDetail({
 
             {/* Answer Form for Staff */}
             {isStaff && showAnswerForm && (
-              <Card className="mb-6 border-2 border-primary/20">
+              <Card className="mb-6 border-2 border-gray-300">
                 <CardHeader>
                   <h3 className="text-lg font-medium">답변 작성</h3>
                   <CardDescription>작성한 답변은 질문자와 모든 방문자에게 공개됩니다.</CardDescription>
@@ -338,7 +338,7 @@ export default function PostDetail({
                       <Textarea
                         id="answer-content"
                         placeholder="답변 내용을 입력하세요"
-                        className="min-h-[200px]"
+                        className="min-h-[200px] border-gray-300"
                         value={answerContent}
                         onChange={(e) => setAnswerContent(e.target.value)}
                         required
@@ -401,7 +401,7 @@ export default function PostDetail({
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment, idx, arr) => (
                         <div key={comment.commentId} className={idx !== arr.length - 1 ? "mb-6" : ""}>
-                          <Card>
+                          <Card className="border border-gray-300">
                             <CardHeader className="pb-2">
                               <div className="flex items-center gap-2">
                                 <div className="font-medium">의료진</div>
@@ -441,7 +441,7 @@ export default function PostDetail({
                       .filter((c) => c.author === "AI")
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment) => (
-                        <Card key={comment.commentId}>
+                        <Card key={comment.commentId} className="border border-gray-300">
                           <CardHeader className="pb-2">
                             <div className="flex items-center gap-2">
                               <div className="font-medium">AI 어시스턴트</div>
@@ -459,6 +459,7 @@ export default function PostDetail({
                                   <div className="flex gap-3">
                                     <Button
                                       variant="outline"
+                                      className="border border-gray-300"
                                       onClick={async () => {
                                         try {
                                           await fetch(`${baseUrl}/api/post/comment`, {
@@ -480,6 +481,7 @@ export default function PostDetail({
                                     </Button>
                                     <Button
                                       variant="outline"
+                                      className="border border-gray-300"
                                       onClick={async () => {
                                         try {
                                           await fetch(`${baseUrl}/api/post/comment`, {
@@ -570,7 +572,7 @@ export default function PostDetail({
                 {comments
                   .filter((c) => c.author !== "DOCTOR" && c.author !== "AI")
                   .map((comment) => (
-                    <Card key={comment.commentId}>
+                    <Card key={comment.commentId} className="border border-gray-300">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-2">
                           <div className="font-medium">{comment.author}</div>
@@ -590,11 +592,11 @@ export default function PostDetail({
 
           <div>
             <h2 className="text-xl font-semibold mb-4">댓글 작성</h2>
-            <Card>
+            <Card className="border-gray-300">
               <CardContent className="pt-6">
                 <Textarea
                   placeholder="댓글을 입력하세요"
-                  className="mb-4"
+                  className="mb-4 border-gray-300"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
