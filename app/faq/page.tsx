@@ -21,7 +21,13 @@ export default function FAQPage() {
         const res = await fetch(`${baseUrl}/api/post/list?postStatus=ALL`);
         if (res.ok) {
           const data = await res.json();
-          setApiFaqItems(data.result?.faqPosts ?? null);
+          const faqPosts = data.data?.faqPosts ?? []
+          const mappedFaqs = faqPosts.map((faq: any) => ({
+            id: faq.postFAQId,
+            question: faq.question,
+            answer: faq.answer,
+          }))
+          setApiFaqItems(mappedFaqs)
         }
       } catch (error) {
         console.error("Failed to fetch FAQs from API:", error);
