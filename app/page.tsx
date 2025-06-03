@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ChevronRight, MessageCircle, Search, X } from "lucide-react"
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, MessageCircle, Search, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -184,7 +184,7 @@ export default function QnABoard() {
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
           >
-            ≪
+            <ChevronsLeft className="w-4 h-4" />
           </Button>
 
           <Button
@@ -194,7 +194,7 @@ export default function QnABoard() {
             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
-            ‹
+            <ChevronLeft className="w-4 h-4" />
           </Button>
 
           {(() => {
@@ -225,7 +225,7 @@ export default function QnABoard() {
             onClick={() => setCurrentPage((prev) => Math.min(totalPage, prev + 1))}
             disabled={currentPage === totalPage}
           >
-            ›
+            <ChevronRight className="w-4 h-4" />
           </Button>
 
           <Button
@@ -235,7 +235,7 @@ export default function QnABoard() {
             onClick={() => setCurrentPage(totalPage)}
             disabled={currentPage === totalPage}
           >
-            ≫
+            <ChevronsRight className="w-4 h-4" />
           </Button>
         </nav>
       </div>
