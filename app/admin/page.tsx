@@ -160,7 +160,7 @@ export default function AdminDashboard() {
             <Input
               type="search"
               placeholder="질문 검색"
-              className="w-full pl-8"
+              className="w-full pl-8 border-gray-300"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
             <Button
               variant="outline"
               onClick={() => setSearchQuery(searchInput)}
-              className="px-4 ml-2"
+              className="px-4 ml-2 border-gray-300"
             >
               검색
             </Button>

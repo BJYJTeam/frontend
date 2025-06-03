@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <main className="min-h-screen bg-background">
-            <header className="border-b">
+            <header className="border-b border-gray-300">
               <div className="container flex h-16 items-center px-4">
                 <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
                   <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">

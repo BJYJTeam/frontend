@@ -92,7 +92,7 @@ export default function QnABoard() {
             </div>
             <Button
               variant="outline"
-              className="ml-2"
+              className="ml-2 border-gray-300"
               onClick={() => {
                 setSearchQuery(searchInput)
                 setCurrentPage(1)

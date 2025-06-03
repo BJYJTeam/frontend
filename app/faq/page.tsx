@@ -53,12 +53,7 @@ export default function FAQPage() {
     <div className="container mx-auto py-6 px-4 md:px-6">
       {/* Header */}
       <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild className="mb-4">
-          <Link href="/" className="flex items-center">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            홈으로 돌아가기
-          </Link>
-        </Button>
+        
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">자주 묻는 질문</h1>
