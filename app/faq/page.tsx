@@ -23,7 +23,7 @@ export default function FAQPage() {
         const res = await fetch(`${baseUrl}/api/post/list?postStatus=ALL`);
         if (res.ok) {
           const data = await res.json();
-          setApiFaqItems(data.result.faqPosts);
+          setApiFaqItems(data.result?.faqPosts ?? null);
         }
       } catch (error) {
         console.error("Failed to fetch FAQs from API:", error);
