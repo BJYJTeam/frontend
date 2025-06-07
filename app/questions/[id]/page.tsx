@@ -18,7 +18,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ImageAnnotator } from "@/components/image-annotator"
+import { ImageRecommendations } from "@/components/image-recommendations"
 import type { Post, Comment } from "@/post_api_types"
+import { DebugImageLoader } from "@/components/debug-image-loader"
 
 function formatDateTime(dateString: string) {
   const date = new Date(dateString)
@@ -149,6 +151,9 @@ export default function PostDetail({
   const [showImageAnnotator, setShowImageAnnotator] = useState(false)
   const [annotatedImage, setAnnotatedImage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null)
+
   // State for handling new comment input
   const [newComment, setNewComment] = useState("");
 
@@ -174,6 +179,13 @@ export default function PostDetail({
 
   const handleImageChange = (imageData: string | null) => {
     setAnnotatedImage(imageData)
+  }
+
+  const handleSelectRecommendedImage = (imageUrl: string) => {
+    // Clear any existing annotated image when selecting a new recommended image
+    setAnnotatedImage(null)
+    setSelectedImageUrl(imageUrl)
+    setShowImageAnnotator(true)
   }
 
   const handleAnswerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -345,6 +357,22 @@ export default function PostDetail({
                       />
                     </div>
 
+                    {/* Image Recommendations */}
+                    {answerType === "doctor" && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base font-medium">추천 이미지</Label>
+                          <Badge variant="outline" className="bg-blue-50">
+                            질문 내용 기반 추천
+                          </Badge>
+                        </div>
+                        <ImageRecommendations
+                          questionContent={post.title + " " + post.content}
+                          onSelectImage={handleSelectRecommendedImage}
+                        />
+                      </div>
+                    )}
+
                     {/* Image Annotator Toggle */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -366,7 +394,13 @@ export default function PostDetail({
                     </div>
 
                     {/* Image Annotator */}
-                    {showImageAnnotator && <ImageAnnotator onImageChange={handleImageChange} />}
+                    {showImageAnnotator && (
+                      <ImageAnnotator
+                        key={selectedImageUrl} // Force re-render when new image is selected
+                        onImageChange={handleImageChange}
+                        initialImageUrl={selectedImageUrl || undefined}
+                      />
+                    )}
 
                     <div className="flex items-center space-x-2">
                       <Switch id="public-answer" checked={isPublic} onCheckedChange={setIsPublic} />

@@ -20,6 +20,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="min-h-screen bg-background">
             <header className="border-b border-gray-300">
               <div className="container flex h-16 items-center px-4">
+                {/* <Link href="/" className="flex items-center gap-2">
+                  <img src="/logo.png" alt="로고" className="h-8 w-auto" />
+                </Link> */}
                 <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
                   <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
                     홈
