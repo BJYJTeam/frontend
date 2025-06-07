@@ -157,21 +157,32 @@ export default function PostDetail({
   // State for handling new comment input
   const [newComment, setNewComment] = useState("");
 
-  // Inject dummy AI answer if there are no non-draft comments after loading
-  useEffect(() => {
-    if (!isLoading && post && comments.filter(c => c.status !== "DRAFT").length === 0) {
-      const dummyAIComment = {
-        commentId: "dummy-ai-" + Date.now(),
-        status: "NORMAL" as const,
-        content: "이 답변은 AI가 자동으로 생성한 예시입니다.",
-        author: "AI",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        imageUrls: [],
-      };
-      setComments([dummyAIComment]);
-    }
-  }, [isLoading, post, comments.length]);
+  // Inject dummy AI answer and DRAFT answer if there are no non-draft comments after loading
+  // useEffect(() => {
+  //   if (!isLoading && post && comments.filter(c => c.status !== "DRAFT").length === 0) {
+  //     const dummyAIComment = {
+  //       commentId: "dummy-ai-" + Date.now(),
+  //       status: "NORMAL" as const,
+  //       content: "이 답변은 AI가 자동으로 생성한 예시입니다.",
+  //       author: "AI",
+  //       createdAt: new Date().toISOString(),
+  //       updatedAt: new Date().toISOString(),
+  //       imageUrls: [],
+  //     };
+  //     setComments([
+  //       dummyAIComment,
+  //       {
+  //         commentId: "draft-test-" + Date.now(),
+  //         status: "DRAFT",
+  //         content: "이것은 테스트용 DRAFT 상태의 답변입니다. 'AI 자동 답변 불러오기' 버튼으로 입력창에 채워질 것입니다.",
+  //         author: "AI",
+  //         createdAt: new Date().toISOString(),
+  //         updatedAt: new Date().toISOString(),
+  //         imageUrls: [],
+  //       },
+  //     ]);
+  //   }
+  // }, [isLoading, post, comments.length]);
 
   // In a real application, this would be determined by authentication
   const isStaff = true // Simulating that the current user is staff
@@ -322,7 +333,7 @@ export default function PostDetail({
               <Card className="mb-6 border-2 border-gray-300">
                 <CardHeader>
                   <h3 className="text-lg font-medium">답변 작성</h3>
-                  <CardDescription>작성한 답변은 질문자와 모든 방문자에게 공개됩니다.</CardDescription>
+                  <CardDescription>사용자가 불만족 피드백을 남긴 질문에는 AI 초안 생성이 가능합니다. (AI 자동 답변 불러오기)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAnswerSubmit} className="space-y-4">
@@ -499,6 +510,7 @@ export default function PostDetail({
                               ) : (
                                 <>
                                   <p className="text-sm text-gray-600 mb-2">이 답변이 도움이 되었나요?</p>
+                                  <p className="text-sm text-gray-500 mb-1">사유를 작성해주시면 원장님이 직접 답변해드립니다.</p>
                                   <div className="flex gap-3">
                                     <Button
                                       variant="outline"
