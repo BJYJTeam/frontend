@@ -326,24 +326,23 @@ export default function PostDetail({
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAnswerSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>답변 유형</Label>
-                      <RadioGroup
-                        defaultValue="doctor"
-                        value={answerType}
-                        onValueChange={setAnswerType}
-                        className="flex space-x-4"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="doctor" id="doctor" />
-                          <Label htmlFor="doctor">의료진 답변</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="ai" id="ai" />
-                          <Label htmlFor="ai">AI 자동 답변</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
+                    {comments.some(c => c.status === "DRAFT") && (
+                      <div className="mb-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const draft = comments.find(c => c.status === "DRAFT");
+                            if (draft) {
+                              setAnswerType("ai");
+                              setAnswerContent(draft.content);
+                            }
+                          }}
+                        >
+                          AI 자동 답변 불러오기
+                        </Button>
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="answer-content">답변 내용</Label>
