@@ -157,9 +157,9 @@ export default function PostDetail({
   // State for handling new comment input
   const [newComment, setNewComment] = useState("");
 
-  // Inject dummy AI answer if there are no comments after loading
+  // Inject dummy AI answer if there are no non-draft comments after loading
   useEffect(() => {
-    if (!isLoading && post && comments.length === 0) {
+    if (!isLoading && post && comments.filter(c => c.status !== "DRAFT").length === 0) {
       const dummyAIComment = {
         commentId: "dummy-ai-" + Date.now(),
         status: "NORMAL" as const,
@@ -421,7 +421,7 @@ export default function PostDetail({
             )}
 
             {/* Display Answers with Images */}
-            {comments.some(c => c.author === "DOCTOR" || c.author === "AI") ? (
+            {comments.some(c => (c.author === "DOCTOR" || c.author === "AI") && c.status !== "DRAFT") ? (
               <Tabs defaultValue="doctor" className="w-full">
                 <TabsList className="mb-4 bg-gray-100 rounded-lg p-1 flex gap-0 w-fit">
                   <TabsTrigger
@@ -439,9 +439,9 @@ export default function PostDetail({
                 </TabsList>
 
                 <TabsContent value="doctor">
-                  {comments.filter(c => c.author === "DOCTOR").length > 0 ? (
+                  {comments.filter(c => c.author === "DOCTOR" && c.status !== "DRAFT").length > 0 ? (
                     comments
-                      .filter(c => c.author === "DOCTOR")
+                      .filter(c => c.author === "DOCTOR" && c.status !== "DRAFT")
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment, idx, arr) => (
                         <div key={comment.commentId} className={idx !== arr.length - 1 ? "mb-6" : ""}>
@@ -480,9 +480,9 @@ export default function PostDetail({
                 </TabsContent>
 
                 <TabsContent value="ai">
-                  {comments.filter(c => c.author === "AI").length > 0 ? (
+                  {comments.filter(c => c.author === "AI" && c.status !== "DRAFT").length > 0 ? (
                     comments
-                      .filter((c) => c.author === "AI")
+                      .filter((c) => c.author === "AI" && c.status !== "DRAFT")
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment) => (
                         <Card key={comment.commentId} className="border border-gray-300">
@@ -611,10 +611,10 @@ export default function PostDetail({
 
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">댓글</h2>
-            {comments && comments.filter((c) => c.author !== "DOCTOR" && c.author !== "AI").length > 0 ? (
+            {comments && comments.filter((c) => c.author !== "DOCTOR" && c.author !== "AI" && c.status !== "DRAFT").length > 0 ? (
               <div className="space-y-4">
                 {comments
-                  .filter((c) => c.author !== "DOCTOR" && c.author !== "AI")
+                  .filter((c) => c.author !== "DOCTOR" && c.author !== "AI" && c.status !== "DRAFT")
                   .map((comment) => (
                     <Card key={comment.commentId} className="border border-gray-300">
                       <CardHeader className="pb-2">
