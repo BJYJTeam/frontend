@@ -2,6 +2,7 @@
 "use client"
 
 import React from "react"
+import type { JSX } from "react";
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -565,15 +566,15 @@ export default function PostDetail({
                           <CardContent className="space-y-4">
                             {(() => {
                               const lines = comment.content.split('\n');
-                              const result = [];
+                              const result: JSX.Element[] = [];
                               let isRelatedSection = false;
-                              for (let line of lines) {
+                              lines.forEach((line, i) => {
                                 if (line.trim() === "[유사 질문]") {
                                   result.push(
                                     <p key="related-header" className="font-semibold mt-4">유사 질문</p>
                                   );
                                   isRelatedSection = true;
-                                  continue;
+                                  return;
                                 }
                                 // Updated block for related questions
                                 if (isRelatedSection && /^[a-zA-Z0-9\-]+$/.test(line.trim())) {
@@ -594,9 +595,9 @@ export default function PostDetail({
                                     </p>
                                   );
                                 } else {
-                                  result.push(<p key={line}>{line}</p>);
+                                  result.push(<p key={`line-${i}`}>{line}</p>);
                                 }
-                              }
+                              });
                               return result;
                             })()}
                             <div className="mt-6">

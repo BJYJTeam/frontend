@@ -48,21 +48,7 @@ export default function QnABoard() {
     }
   }
 
-  const allTags = [
-    "[척추측만증]",
-    "[자세]",
-    "허리통증",
-    "운동",
-    "수술",
-    "통증",
-    "[운동요법]"
-  ].sort((a, b) => {
-    const isA = /^\[.*\]$/.test(a)
-    const isB = /^\[.*\]$/.test(b)
-    return isA === isB ? a.localeCompare(b) : isA ? -1 : 1
-  })
-  // Hardcoded sample tags for testing purposes
-  // const allTags = ["허리통증", "자세", "운동", "치료", "수술"]
+  const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
 
   const filterQuestionsByTags = (questionsToFilter: Post[]) => {
     if (selectedTags.length === 0) return questionsToFilter

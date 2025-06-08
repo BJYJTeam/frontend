@@ -570,7 +570,8 @@ export default function AdminPostDetail({
                               const lines = comment.content.split('\n');
                               const result = [];
                               let isRelatedSection = false;
-                              for (let line of lines) {
+                              for (let idx = 0; idx < lines.length; idx++) {
+                                const line = lines[idx];
                                 if (line.trim() === "[유사 질문]") {
                                   result.push(
                                     <p key="related-header" className="font-semibold mt-4">유사 질문</p>
@@ -597,7 +598,7 @@ export default function AdminPostDetail({
                                     </p>
                                   );
                                 } else {
-                                  result.push(<p key={line}>{line}</p>);
+                                  result.push(<p key={line + idx}>{line}</p>);
                                 }
                               }
                               return result;
