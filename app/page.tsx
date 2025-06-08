@@ -20,6 +20,7 @@ export default function QnABoard() {
   const [totalPage, setTotalPage] = useState(1)
   const [currentTab, setCurrentTab] = useState("all")
   const [allTags, setAllTags] = useState<string[]>([])
+  const [showAllTags, setShowAllTags] = useState(false)
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -110,7 +111,7 @@ export default function QnABoard() {
       <div className="mb-6">
         <h2 className="text-sm font-medium mb-2">태그로 필터링</h2>
         <div className="flex flex-wrap gap-2">
-          {[...allTags]
+          {(showAllTags ? allTags : allTags.slice(0, 33))
             .sort((a, b) => {
               const isA = /^\[.*\]$/.test(a);
               const isB = /^\[.*\]$/.test(b);
@@ -135,6 +136,16 @@ export default function QnABoard() {
                 </Badge>
               );
             })}
+          {allTags.length > 33 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAllTags(!showAllTags)}
+              className="h-6 px-2 text-xs"
+            >
+              {showAllTags ? "간단히 보기" : "더보기"}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
