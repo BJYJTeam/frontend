@@ -515,17 +515,21 @@ export default function PostDetail({
                                   isRelatedSection = true;
                                   continue;
                                 }
+                                // Updated block for related questions
                                 if (isRelatedSection && /^[a-zA-Z0-9\-]+$/.test(line.trim())) {
+                                  const relatedPostId = line.trim();
+                                  const formattedId = relatedPostId.replace(
+                                    /^([a-fA-F0-9]{8})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{12})$/,
+                                    "$1-$2-$3-$4-$5"
+                                  );
+                                  const matchedPost = posts.find((p) => p.postId === formattedId);
                                   result.push(
-                                    <p key={line}>
+                                    <p key={relatedPostId}>
                                       <Link
-                                        href={`/questions/${line.trim().replace(
-                                          /^([a-fA-F0-9]{8})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{12})$/,
-                                          "$1-$2-$3-$4-$5"
-                                        )}?visibility=PUBLIC`}
+                                        href={`/questions/${formattedId}?visibility=PUBLIC`}
                                         className="text-blue-600 underline"
                                       >
-                                        {line.trim()}
+                                        {matchedPost?.title ?? relatedPostId}
                                       </Link>
                                     </p>
                                   );
