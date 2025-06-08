@@ -503,7 +503,32 @@ export default function PostDetail({
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
-                            <p className="whitespace-pre-line">{comment.content}</p>
+                            {(() => {
+                              const lines = comment.content.split('\n');
+                              const result = [];
+                              let isRelatedSection = false;
+                              for (let line of lines) {
+                                if (line.trim() === "[유사 질문]") {
+                                  result.push(
+                                    <p key="related-header" className="font-semibold mt-4">유사 질문</p>
+                                  );
+                                  isRelatedSection = true;
+                                  continue;
+                                }
+                                if (isRelatedSection && /^[a-zA-Z0-9\-]+$/.test(line.trim())) {
+                                  result.push(
+                                    <p key={line}>
+                                      <Link href={`/questions/${line.trim()}`} className="text-blue-600 underline">
+                                        {line.trim()}
+                                      </Link>
+                                    </p>
+                                  );
+                                } else {
+                                  result.push(<p key={line}>{line}</p>);
+                                }
+                              }
+                              return result;
+                            })()}
                             <div className="mt-6">
                               {aiFeedbackSubmitted ? (
                                 <p className="text-sm text-green-600">피드백이 성공적으로 제출되었습니다. 감사합니다!</p>
