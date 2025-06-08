@@ -19,6 +19,7 @@ export default function QnABoard() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPage, setTotalPage] = useState(1)
   const [currentTab, setCurrentTab] = useState("all")
+  const [allTags, setAllTags] = useState<string[]>([])
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -43,12 +44,13 @@ export default function QnABoard() {
       const data: PostListResponse = await res.json()
       setQuestions(data.data.posts)
       setTotalPage(data.data.totalPage)
+      const tagsFromApi = data.data.keywords.map((k) => k.keyword)
+      setAllTags(tagsFromApi)
     } catch (err) {
       console.error("Failed to fetch posts from backend:", err)
     }
   }
 
-  const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
 
   const filterQuestionsByTags = (questionsToFilter: Post[]) => {
     if (selectedTags.length === 0) return questionsToFilter
