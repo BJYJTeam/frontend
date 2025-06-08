@@ -108,25 +108,31 @@ export default function QnABoard() {
       <div className="mb-6">
         <h2 className="text-sm font-medium mb-2">태그로 필터링</h2>
         <div className="flex flex-wrap gap-2">
-          {allTags.map((tag) => {
-            const bracketedMatch = tag.match(/^\[(.*)\]$/);
-            const label = bracketedMatch ? bracketedMatch[1] : tag;
-            const isBracketed = !!bracketedMatch;
-            return (
-              <Badge
-                key={tag}
-                variant={selectedTags.includes(tag) ? "default" : "outline"}
-                className={`cursor-pointer text-xs flex gap-0.5 items-center 
-                  ${selectedTags.includes(tag) ? "ring-2 ring-black bg-black text-white" : "hover:bg-secondary"} 
-                  ${isBracketed && !selectedTags.includes(tag) ? "bg-gray-300 text-black" : ""}`}
-                onClick={() => toggleTag(tag)}
-              >
-                {isBracketed && <span>[</span>}
-                <span>{label}</span>
-                {isBracketed && <span>]</span>}
-              </Badge>
-            );
-          })}
+          {[...allTags]
+            .sort((a, b) => {
+              const isA = /^\[.*\]$/.test(a);
+              const isB = /^\[.*\]$/.test(b);
+              return isA === isB ? 0 : isA ? -1 : 1;
+            })
+            .map((tag) => {
+              const bracketedMatch = tag.match(/^\[(.*)\]$/);
+              const label = bracketedMatch ? bracketedMatch[1] : tag;
+              const isBracketed = !!bracketedMatch;
+              return (
+                <Badge
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? "default" : "outline"}
+                  className={`cursor-pointer text-xs flex gap-0.5 items-center 
+                    ${selectedTags.includes(tag) ? "ring-2 ring-black bg-black text-white" : "hover:bg-secondary"} 
+                    ${isBracketed && !selectedTags.includes(tag) ? "bg-gray-300 text-black" : ""}`}
+                  onClick={() => toggleTag(tag)}
+                >
+                  {isBracketed && <span>[</span>}
+                  <span>{label}</span>
+                  {isBracketed && <span>]</span>}
+                </Badge>
+              );
+            })}
           <Button
             variant="ghost"
             size="sm"
