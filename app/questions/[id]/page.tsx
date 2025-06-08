@@ -307,7 +307,7 @@ export default function PostDetail({
 
             {/* Display keywords */}
             <div className="flex flex-wrap gap-1 mt-3">
-              {post.keywords?.map((tag) => (
+              {[...new Set(post.keywords ?? [])].map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-xs">
                   {tag}
                 </Badge>
