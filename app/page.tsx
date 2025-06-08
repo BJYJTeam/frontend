@@ -291,7 +291,7 @@ function QuestionCard({ question }: { question: Post }) {
           {question.content.length > 150 ? `${question.content.slice(0, 150)}...` : question.content}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
-          {question.keywords.map((tag) => (
+          {[...new Set(question.keywords)].map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
