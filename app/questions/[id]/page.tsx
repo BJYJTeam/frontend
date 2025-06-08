@@ -159,7 +159,7 @@ export default function PostDetail({
 
   // Inject dummy AI answer and DRAFT answer if there are no non-draft comments after loading
   // useEffect(() => {
-  //   if (!isLoading && post && comments.filter(c => c.status !== "DRAFT").length === 0) {
+  //   if (!isLoading && post) {
   //     const dummyAIComment = {
   //       commentId: "dummy-ai-" + Date.now(),
   //       status: "NORMAL" as const,
@@ -394,23 +394,23 @@ export default function PostDetail({
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleAnswerSubmit} className="space-y-4">
-                    {comments.some(c => c.status === "DRAFT") && (
-                      <div className="mb-4">
+                    <div className="mb-4">
+                      <div title="불만족 피드백이 있어야 초안 생성이 가능합니다.">
                         <Button
                           type="button"
                           variant="outline"
+                          disabled={!comments.some((c) => c.status === "DRAFT")}
                           onClick={() => {
-                            const draft = comments.find(c => c.status === "DRAFT");
-                            if (draft) {
-                              setAnswerType("ai");
-                              setAnswerContent(draft.content);
+                            const draftComment = comments.find((c) => c.status === "DRAFT");
+                            if (draftComment) {
+                              setAnswerContent(draftComment.content);
                             }
                           }}
                         >
                           AI 자동 답변 불러오기
                         </Button>
                       </div>
-                    )}
+                    </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="answer-content">답변 내용</Label>
