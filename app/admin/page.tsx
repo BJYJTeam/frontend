@@ -485,11 +485,8 @@ function AdminQuestionCard({ question }: { question: Post }) {
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">
             <Link 
-              href={{
-                pathname: `/questions/${question.postId}`,
-                query: { visibility: question.visibility },
-              }} 
-                className="hover:underline">
+              href={{pathname:`/admin/questions/${question.postId}`, query: { visibility: question.visibility },}}
+              className="hover:underline">
               {question.title}
             </Link>
           </CardTitle>
@@ -549,13 +546,9 @@ function AdminQuestionCard({ question }: { question: Post }) {
       </CardContent>
       <CardFooter className="flex justify-end pt-0">
         <Button variant="outline" size="sm" asChild className="mr-2 border-gray-300">
-          <Link 
-          href=
-          {{
-              pathname: `/questions/${question.postId}`,
-              query: { visibility: question.visibility },
-            }}>
-            상세보기</Link>
+          <Link href={{pathname:`/admin/questions/${question.postId}`, query: { visibility: question.visibility },}}>
+            상세보기
+          </Link>
         </Button>
         {question.status !== "DOCTOR_COMMENTED" && (
           <Button
@@ -563,13 +556,9 @@ function AdminQuestionCard({ question }: { question: Post }) {
             asChild
             className="bg-black text-white hover:bg-black/90"
           >
-            <Link 
-          href=
-          {{
-              pathname: `/questions/${question.postId}`,
-              query: { visibility: question.visibility },
-            }}>
-              답변하기</Link>
+            <Link href={{pathname:`/admin/questions/${question.postId}`, query: { visibility: question.visibility },}}>
+              답변하기
+            </Link>
           </Button>
         )}
       </CardFooter>

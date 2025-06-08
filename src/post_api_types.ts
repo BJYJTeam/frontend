@@ -75,6 +75,7 @@ export interface Post {
   commentCount: number;
   keywords: string[];
   visibility: "PUBLIC" | "PRIVATE";
+  comments?: Comment[];
 }
 
 export interface KeywordCount {

@@ -35,7 +35,7 @@ function formatDateTime(dateString: string) {
   return `${yyyy}-${mm}-${dd} ${hours}:${minutes} ${ampm}`
 }
 
-export default function PostDetail({
+export default function AdminPostDetail({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -96,7 +96,7 @@ export default function PostDetail({
           return;
         }
         try {
-          const url = `${baseUrl}/api/post/${id}/private`;
+          const url = `${baseUrl}/api/doctor/post/${id}/private`;
           const options = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -123,10 +123,13 @@ export default function PostDetail({
       }
       if (v === "PUBLIC") {
         try {
-          const url = `${baseUrl}/api/post/${id}/public`;
+          const url = `${baseUrl}/api/doctor/post/${id}`;
+          console.log("📡 Fetching PUBLIC post from:", url);
           const res = await fetch(url);
+          console.log("📥 Response status:", res.status);
           if (!res.ok) throw new Error("Failed to fetch post detail");
           const data = await res.json();
+          console.log("📄 Response JSON:", data);
           const { post, comments } = data.data;
           setPost(post);
           setComments(comments);
