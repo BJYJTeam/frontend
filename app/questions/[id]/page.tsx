@@ -307,11 +307,28 @@ export default function PostDetail({
 
             {/* Display keywords */}
             <div className="flex flex-wrap gap-1 mt-3">
-              {[...new Set(post.keywords ?? [])].map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+              {[...new Set(post.keywords ?? [])]
+                .sort((a, b) => {
+                  const isA = /^\[.*\]$/.test(a);
+                  const isB = /^\[.*\]$/.test(b);
+                  return isA === isB ? 0 : isA ? -1 : 1;
+                })
+                .map((tag) => {
+                  const bracketedMatch = tag.match(/^\[(.*)\]$/);
+                  const label = bracketedMatch ? bracketedMatch[1] : tag;
+                  const isBracketed = !!bracketedMatch;
+                  return (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className={`text-xs flex gap-0.5 items-center ${isBracketed ? "bg-gray-300 text-black" : ""}`}
+                    >
+                      {isBracketed && <span>[</span>}
+                      <span>{label}</span>
+                      {isBracketed && <span>]</span>}
+                    </Badge>
+                  );
+                })}
             </div>
           </div>
 

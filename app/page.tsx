@@ -48,7 +48,19 @@ export default function QnABoard() {
     }
   }
 
-  const allTags = Array.from(new Set(questions.flatMap((question) => question.keywords))).sort()
+  const allTags = [
+    "[척추측만증]",
+    "[자세]",
+    "허리통증",
+    "운동",
+    "수술",
+    "통증",
+    "[운동요법]"
+  ].sort((a, b) => {
+    const isA = /^\[.*\]$/.test(a)
+    const isB = /^\[.*\]$/.test(b)
+    return isA === isB ? a.localeCompare(b) : isA ? -1 : 1
+  })
   // Hardcoded sample tags for testing purposes
   // const allTags = ["허리통증", "자세", "운동", "치료", "수술"]
 
@@ -110,16 +122,25 @@ export default function QnABoard() {
       <div className="mb-6">
         <h2 className="text-sm font-medium mb-2">태그로 필터링</h2>
         <div className="flex flex-wrap gap-2">
-          {allTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant={selectedTags.includes(tag) ? "default" : "outline"}
-              className={`cursor-pointer ${selectedTags.includes(tag) ? "" : "hover:bg-secondary"}`}
-              onClick={() => toggleTag(tag)}
-            >
-              {tag}
-            </Badge>
-          ))}
+          {allTags.map((tag) => {
+            const bracketedMatch = tag.match(/^\[(.*)\]$/);
+            const label = bracketedMatch ? bracketedMatch[1] : tag;
+            const isBracketed = !!bracketedMatch;
+            return (
+              <Badge
+                key={tag}
+                variant={selectedTags.includes(tag) ? "default" : "outline"}
+                className={`cursor-pointer text-xs flex gap-0.5 items-center 
+                  ${selectedTags.includes(tag) ? "ring-2 ring-black bg-black text-white" : "hover:bg-secondary"} 
+                  ${isBracketed && !selectedTags.includes(tag) ? "bg-gray-300 text-black" : ""}`}
+                onClick={() => toggleTag(tag)}
+              >
+                {isBracketed && <span>[</span>}
+                <span>{label}</span>
+                {isBracketed && <span>]</span>}
+              </Badge>
+            );
+          })}
           <Button
             variant="ghost"
             size="sm"
@@ -291,11 +312,28 @@ function QuestionCard({ question }: { question: Post }) {
           {question.content.length > 150 ? `${question.content.slice(0, 150)}...` : question.content}
         </p>
         <div className="flex flex-wrap gap-1 mt-2">
-          {[...new Set(question.keywords)].map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
+          {[...new Set(question.keywords)]
+            .sort((a, b) => {
+              const isA = /^\[.*\]$/.test(a);
+              const isB = /^\[.*\]$/.test(b);
+              return isA === isB ? 0 : isA ? -1 : 1;
+            })
+            .map((tag) => {
+              const bracketedMatch = tag.match(/^\[(.*)\]$/);
+              const label = bracketedMatch ? bracketedMatch[1] : tag;
+              const isBracketed = !!bracketedMatch;
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className={`text-xs flex gap-0.5 items-center ${isBracketed ? "bg-gray-300 text-black" : ""}`}
+                >
+                  {isBracketed && <span>[</span>}
+                  <span>{label}</span>
+                  {isBracketed && <span>]</span>}
+                </Badge>
+              );
+            })}
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-0">

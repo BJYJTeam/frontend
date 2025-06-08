@@ -518,11 +518,28 @@ function AdminQuestionCard({ question }: { question: Post }) {
       <CardContent className="pb-2">
         <p className="line-clamp-2 text-muted-foreground">{question.content}</p>
         <div className="flex flex-wrap gap-1 mt-2">
-          {[...new Set(question.keywords ?? [])].map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
+          {[...new Set(question.keywords ?? [])]
+            .sort((a, b) => {
+              const isA = /^\[.*\]$/.test(a);
+              const isB = /^\[.*\]$/.test(b);
+              return isA === isB ? 0 : isA ? -1 : 1;
+            })
+            .map((tag) => {
+              const bracketedMatch = tag.match(/^\[(.*)\]$/);
+              const label = bracketedMatch ? bracketedMatch[1] : tag;
+              const isBracketed = !!bracketedMatch;
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className={`text-xs flex gap-0.5 items-center ${isBracketed ? "bg-gray-300 text-black" : ""}`}
+                >
+                  {isBracketed && <span>[</span>}
+                  <span>{label}</span>
+                  {isBracketed && <span>]</span>}
+                </Badge>
+              );
+            })}
         </div>
       </CardContent>
       <CardFooter className="flex justify-end pt-0">
