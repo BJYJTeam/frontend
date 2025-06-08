@@ -49,7 +49,12 @@ export default function AdminDashboard() {
         )
         if (!res.ok) throw new Error("Failed to fetch posts")
         const data: DoctorPostListResponse = await res.json()
-        setAllQuestions(data.data.posts)
+        setAllQuestions(
+          data.data.posts.map(post => ({
+            ...post,
+            keywords: [...new Set(post.keywords ?? [])]
+          }))
+        )
         setAllTotalPage(data.data.totalPage || 1)
       } catch (err) {
         console.error("Failed to fetch questions:", err)
@@ -69,7 +74,12 @@ export default function AdminDashboard() {
         )
         if (!res.ok) throw new Error("Failed to fetch answered posts")
         const data: DoctorPostListResponse = await res.json()
-        setAnsweredQuestions(data.data.posts)
+        setAnsweredQuestions(
+          data.data.posts.map(post => ({
+            ...post,
+            keywords: [...new Set(post.keywords ?? [])]
+          }))
+        )
         setAnsweredTotalPage(data.data.totalPage || 1)
       } catch (err) {
         console.error("Failed to fetch answered questions:", err)
@@ -89,7 +99,12 @@ export default function AdminDashboard() {
         )
         if (!res.ok) throw new Error("Failed to fetch AI answered posts")
         const data: DoctorPostListResponse = await res.json()
-        setAiQuestions(data.data.posts)
+        setAiQuestions(
+          data.data.posts.map(post => ({
+            ...post,
+            keywords: [...new Set(post.keywords ?? [])]
+          }))
+        )
         setAiTotalPage(data.data.totalPage || 1)
       } catch (err) {
         console.error("Failed to fetch AI answered questions:", err)
@@ -109,7 +124,12 @@ export default function AdminDashboard() {
         )
         if (!res.ok) throw new Error("Failed to fetch unanswered posts")
         const data: DoctorPostListResponse = await res.json()
-        setUnansweredPaginatedQuestions(data.data.posts)
+        setUnansweredPaginatedQuestions(
+          data.data.posts.map(post => ({
+            ...post,
+            keywords: [...new Set(post.keywords ?? [])]
+          }))
+        )
         setUnansweredTotalPage(data.data.totalPage || 1)
       } catch (err) {
         console.error("Failed to fetch unanswered questions:", err)
@@ -498,7 +518,7 @@ function AdminQuestionCard({ question }: { question: Post }) {
       <CardContent className="pb-2">
         <p className="line-clamp-2 text-muted-foreground">{question.content}</p>
         <div className="flex flex-wrap gap-1 mt-2">
-          {question.keywords?.map((tag) => (
+          {[...new Set(question.keywords ?? [])].map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
