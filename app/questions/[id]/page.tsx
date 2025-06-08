@@ -188,6 +188,46 @@ export default function PostDetail({
   const isStaff = true // Simulating that the current user is staff
   // Answer button is only shown for staff 
 
+  // Dynamically fetch related post titles for AI answers
+  const [relatedTitles, setRelatedTitles] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const relatedIds = new Set<string>();
+    comments.forEach((comment) => {
+      comment.content.split("\n").forEach((line) => {
+        if (/^[a-zA-Z0-9\-]{32,36}$/.test(line.trim())) {
+          const formattedId = line.trim().replace(
+            /^([a-fA-F0-9]{8})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{12})$/,
+            "$1-$2-$3-$4-$5"
+          );
+          relatedIds.add(formattedId);
+        }
+      });
+    });
+
+    if (relatedIds.size === 0) {
+      setRelatedTitles({});
+      return;
+    }
+
+    Promise.all(
+      Array.from(relatedIds).map(async (postId) => {
+        try {
+          const res = await fetch(`${baseUrl}/api/post/${postId}/public`);
+          const data = await res.json();
+          return { postId, title: data.data.post.title };
+        } catch {
+          return { postId, title: postId };
+        }
+      })
+    ).then((results) => {
+      const titles: Record<string, string> = {};
+      results.forEach(({ postId, title }) => {
+        titles[postId] = title;
+      });
+      setRelatedTitles(titles);
+    });
+  }, [comments]);
+
   const handleImageChange = (imageData: string | null) => {
     setAnnotatedImage(imageData)
   }
@@ -539,14 +579,14 @@ export default function PostDetail({
                                     /^([a-fA-F0-9]{8})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{4})([a-fA-F0-9]{12})$/,
                                     "$1-$2-$3-$4-$5"
                                   );
-                                  const matchedPost = posts.find((p) => p.postId === formattedId);
+                                  const title = relatedTitles[formattedId] ?? formattedId;
                                   result.push(
                                     <p key={relatedPostId}>
                                       <Link
                                         href={`/questions/${formattedId}?visibility=PUBLIC`}
                                         className="text-blue-600 underline"
                                       >
-                                        {matchedPost?.title ?? relatedPostId}
+                                        {title}
                                       </Link>
                                     </p>
                                   );
