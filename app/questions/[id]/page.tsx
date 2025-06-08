@@ -280,6 +280,8 @@ export default function PostDetail({
         });
       }
 
+
+
       // Reset form and UI
       setAnswerContent("");
       setShowAnswerForm(false);
@@ -400,15 +402,37 @@ export default function PostDetail({
                     <div className="mb-4">
                       <div title="불만족 피드백이 있어야 초안 생성이 가능합니다.">
                         <Button
-                          type="button"
-                          variant="outline"
-                          disabled={!comments.some((c) => c.status === "DRAFT")}
-                          onClick={() => {
-                            const draftComment = comments.find((c) => c.status === "DRAFT");
-                            if (draftComment) {
-                              setAnswerContent(draftComment.content);
-                            }
-                          }}
+                            type="button"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                function formatUuidWithHyphens(uuid: string): string {
+                                  if (uuid.length !== 32) return uuid;
+
+                                  return (
+                                      uuid.slice(0, 8) + "-" +
+                                      uuid.slice(8, 12) + "-" +
+                                      uuid.slice(12, 16) + "-" +
+                                      uuid.slice(16, 20) + "-" +
+                                      uuid.slice(20)
+                                  );
+                                }
+
+                                const formattedPostId = formatUuidWithHyphens(postId);
+                                const res = await fetch(`${baseUrl}/api/doctor/post/${formattedPostId}/comments/draft`);
+                                if (!res.ok) throw new Error("Failed to fetch draft comment");
+                                const data = await res.json();
+                                if (data.data && data.data.length > 0) {
+                                  setAnswerContent(data.data[0].content);
+                                } else {
+                                  alert("Draft 댓글이 없습니다.");
+                                }
+                              } catch (error) {
+                                console.error(error);
+                                alert("AI 자동 답변 불러오기에 실패했습니다.");
+                              }
+                            }}
+                            disabled={false}
                         >
                           AI 자동 답변 불러오기
                         </Button>
