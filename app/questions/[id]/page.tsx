@@ -518,7 +518,7 @@ export default function PostDetail({
                                 if (isRelatedSection && /^[a-zA-Z0-9\-]+$/.test(line.trim())) {
                                   result.push(
                                     <p key={line}>
-                                      <Link href={`/questions/${line.trim()}`} className="text-blue-600 underline">
+                                      <Link href={`/questions/${line.trim()}?visibility=PUBLIC`} className="text-blue-600 underline">
                                         {line.trim()}
                                       </Link>
                                     </p>
