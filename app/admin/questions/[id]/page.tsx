@@ -728,7 +728,9 @@ export default function AdminPostDetail({
                     <Card key={comment.commentId} className="border border-gray-300">
                       <CardHeader className="pb-2">
                         <div className="flex items-center gap-2">
-                          <div className="font-medium">{comment.author}</div>
+                          <div className="font-medium">
+                            {comment.author === "USER" ? post?.author : comment.author}
+                          </div>
                           <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
                         </div>
                       </CardHeader>
