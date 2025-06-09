@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, MessageCircle, Search, X } from "lucide-react"
+import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, MessageCircle, Search, X, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +21,7 @@ export default function QnABoard() {
   const [currentTab, setCurrentTab] = useState("all")
   const [allTags, setAllTags] = useState<string[]>([])
   const [showAllTags, setShowAllTags] = useState(false)
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
 
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -52,6 +53,24 @@ export default function QnABoard() {
     }
   }
 
+  // Example feedback submission function with loading state
+  async function submitFeedback() {
+    setIsSubmittingFeedback(true)
+    try {
+      // Replace the URL and payload with actual feedback submission details
+      const response = await fetch(`${baseUrl || "http://localhost:8080"}/api/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ /* feedback data */ }),
+      })
+      if (!response.ok) throw new Error("Failed to submit feedback")
+      // handle success (e.g., show a message or reset form)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmittingFeedback(false)
+    }
+  }
 
   const filterQuestionsByTags = (questionsToFilter: Post[]) => {
     if (selectedTags.length === 0) return questionsToFilter
@@ -264,6 +283,19 @@ export default function QnABoard() {
             <ChevronsRight className="w-4 h-4" />
           </Button>
         </nav>
+      </div>
+
+      <div className="mt-6">
+        <Button type="button" onClick={submitFeedback} disabled={isSubmittingFeedback}>
+          {isSubmittingFeedback ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              제출 중...
+            </>
+          ) : (
+            "피드백 제출"
+          )}
+        </Button>
       </div>
     </div>
   )

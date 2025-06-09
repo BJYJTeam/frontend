@@ -519,7 +519,7 @@ export default function PostDetail({
                           <Card className="border border-gray-300">
                             <CardHeader className="pb-2">
                               <div className="flex items-center gap-2">
-                                <div className="font-medium">의료진</div>
+                                <div className="font-medium">온누리병원장 김영환</div>
                                 <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
                               </div>
                             </CardHeader>
@@ -559,7 +559,7 @@ export default function PostDetail({
                         <Card key={comment.commentId} className="border border-gray-300">
                           <CardHeader className="pb-2">
                             <div className="flex items-center gap-2">
-                              <div className="font-medium">AI 어시스턴트</div>
+                              <div className="font-medium">온누리병원 AI 인턴</div>
                               <CardDescription>{formatDateTime(comment.createdAt)}</CardDescription>
                             </div>
                           </CardHeader>

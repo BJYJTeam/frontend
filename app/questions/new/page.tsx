@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, X } from "lucide-react"
+import { ArrowLeft, X, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,7 +32,7 @@ export default function NewQuestion() {
   })
   // const [tagInput, setTagInput] = useState("")
 
-  
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Common tags for suggestions
   const commonTags = ["청소년", "성인", "치료", "운동", "통증", "검사", "수술", "보조기", "임신", "스포츠"]
@@ -73,6 +73,7 @@ export default function NewQuestion() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const response = await fetch(`${baseUrl}/api/post`, {
         method: "POST",
@@ -95,17 +96,18 @@ export default function NewQuestion() {
       } else {
         const errorResult = await response.json()
         console.error("Failed to create post:", errorResult)
-        console.error("Failed to create post")
         alert("질문 등록에 실패했습니다.")
       }
     } catch (error) {
       console.error("Error submitting form:", error)
       alert("질문 등록에 실패했습니다.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
+    <div className="container mx-auto py-6 px-4 md:px-6 relative">
       <Button variant="ghost" size="sm" asChild className="mb-4">
         <Link href="/" className="flex items-center">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -226,11 +228,26 @@ export default function NewQuestion() {
               </Label>
             </div>
             <div className="flex justify-end">
-              <Button type="submit">질문 등록하기</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    등록 중...
+                  </>
+                ) : (
+                  "질문 등록하기"
+                )}
+              </Button>
             </div>
           </form>
         </CardContent>
       </Card>
+      {isSubmitting && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span className="text-gray-700 font-medium">질문을 등록 중입니다...</span>
+        </div>
+      )}
     </div>
   )
 }
