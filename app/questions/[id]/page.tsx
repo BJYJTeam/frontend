@@ -6,7 +6,7 @@ import type { JSX } from "react";
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Calendar, MessageCircle, User, ImageIcon } from "lucide-react"
+import { ArrowLeft, Calendar, MessageCircle, User, ImageIcon, Loader2 } from "lucide-react"
 
 import { useSearchParams, useRouter } from "next/navigation"
 
@@ -58,6 +58,8 @@ export default function PostDetail({
   const [aiFeedbackSubmitted, setAiFeedbackSubmitted] = useState(false)
   const [showUserFeedbackForm, setShowUserFeedbackForm] = useState(false)
   const [userFeedbackContent, setUserFeedbackContent] = useState("")
+  // 피드백 제출 로딩 상태
+  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false)
 
   const searchParams = useSearchParams()
   const router = useRouter();
@@ -310,7 +312,7 @@ export default function PostDetail({
   return (
     <>
       {post ? (
-        <div className="container mx-auto py-6 px-4 md:px-6">
+        <div className="container mx-auto py-6 px-4 md:px-6 relative">
           <div className="mb-6">
             <Button variant="ghost" size="sm" asChild className="mb-4">
               <Link href="/" className="flex items-center">
@@ -664,6 +666,8 @@ export default function PostDetail({
                                         <Button
                                           onClick={async () => {
                                             if (!userFeedbackContent.trim()) return;
+                                            if (isFeedbackSubmitting) return;
+                                            setIsFeedbackSubmitting(true);
                                             try {
                                               const res = await fetch(`${baseUrl}/api/post/comment`, {
                                                 method: "POST",
@@ -688,14 +692,18 @@ export default function PostDetail({
                                                   imageUrls: [],
                                                 },
                                               ]);
+                                              setUserFeedbackContent("");
                                             } catch (err) {
                                               console.error("피드백 댓글 등록 실패", err);
                                               alert("피드백 등록에 실패했습니다.");
+                                            } finally {
+                                              setIsFeedbackSubmitting(false);
                                             }
                                           }}
                                           className="bg-black text-white"
+                                          disabled={isFeedbackSubmitting}
                                         >
-                                          피드백 제출
+                                          {isFeedbackSubmitting ? "제출 중..." : "피드백 제출"}
                                         </Button>
                                       </div>
                                     </div>
@@ -794,6 +802,13 @@ export default function PostDetail({
               </CardContent>
             </Card>
           </div>
+          {/* Feedback submitting overlay */}
+          {isFeedbackSubmitting && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span className="text-gray-700 font-medium">피드백을 제출 중입니다...</span>
+            </div>
+          )}
         </div>
       ) : isLoading ? (
         <p>로딩 중입니다...</p>
