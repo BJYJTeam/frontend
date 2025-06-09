@@ -295,7 +295,7 @@ export default function AdminPostDetail({
           commentId,
           status: "NORMAL",
           content: answerContent,
-          author: answerType === "doctor" ? "DOCTOR" : "AI",
+          author: "DOCTOR",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           imageUrls: annotatedImage ? [annotatedImage] : [],
