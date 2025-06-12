@@ -518,7 +518,7 @@ export default function AdminPostDetail({
                       .filter(c => c.author === "DOCTOR" && c.status !== "DRAFT")
                       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                       .map((comment, idx, arr) => (
-                        <div key={comment.commentId} className={idx !== arr.length - 1 ? "mb-6" : ""}>
+                        <div key={`${comment.commentId}-${idx}`} className={idx !== arr.length - 1 ? "mb-6" : ""}>
                           <Card className="border border-gray-300">
                             <CardHeader className="pb-2">
                               <div className="flex items-center gap-2">

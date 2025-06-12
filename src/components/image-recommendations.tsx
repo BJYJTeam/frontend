@@ -111,7 +111,7 @@ export function ImageRecommendations({ questionContent, onSelectImage }: ImageRe
           <div className="text-center">
             <AlertCircle className="h-8 w-8 mx-auto mb-2" />
             <p>{error}</p>
-            <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
               다시 시도
             </Button>
           </div>
