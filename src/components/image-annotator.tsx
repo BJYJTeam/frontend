@@ -97,7 +97,7 @@ export function ImageAnnotator({ onImageChange, initialImageUrl }: ImageAnnotato
 
     try {
       // If the URL is from our Django server, proxy it
-      if (url.includes("localhost:8001")) {
+      if (url.includes("localhost:8000")) {
         const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`
         console.log("Using proxy URL:", proxyUrl)
         setImage(proxyUrl)

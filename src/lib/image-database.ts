@@ -6,7 +6,7 @@ export interface APIImageResult {
 }
 
 
-const IMAGE_BASE_URL = "http://127.0.0.1:8001/media/"
+const IMAGE_BASE_URL = "http://127.0.0.1:8000/media/"
 
 // Function to get image type from filename or description
 export function getImageType(filename: string, description: string): "xray" | "diagram" | "illustration" | "photo" {
@@ -36,7 +36,7 @@ export function getDisplayTitle(filename: string): string {
 // Function to recommend images from API based on question content
 export async function recommendImagesFromAPI(questionContent: string): Promise<APIImageResult[]> {
   try {
-    const response = await fetch("http://127.0.0.1:8001/api/recommend-images/", {
+    const response = await fetch("http://127.0.0.1:8000/api/recommend-images/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
