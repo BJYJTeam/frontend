@@ -21,31 +21,31 @@ export function ImageRecommendations({ questionContent, onSelectImage }: ImageRe
   const [error, setError] = useState<string | null>(null)
 
   // Fetch recommendations when component mounts or question content changes
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!questionContent.trim()) {
-        setRecommendedImages([])
-        setLoading(false)
-        return
-      }
-
-      setLoading(true)
-      setError(null)
-
-      try {
-        // Import the function dynamically to avoid SSR issues
-        const { recommendImagesFromAPI } = await import("@/lib/image-database")
-        const images = await recommendImagesFromAPI(questionContent)
-        setRecommendedImages(images)
-      } catch (err) {
-        console.error("Error fetching image recommendations:", err)
-        setError("이미지 추천을 불러오는데 실패했습니다.")
-        setRecommendedImages([])
-      } finally {
-        setLoading(false)
-      }
+  const fetchRecommendations = async () => {
+    if (!questionContent.trim()) {
+      setRecommendedImages([])
+      setLoading(false)
+      return
     }
 
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Import the function dynamically to avoid SSR issues
+      const { recommendImagesFromAPI } = await import("@/lib/image-database")
+      const images = await recommendImagesFromAPI(questionContent)
+      setRecommendedImages(images)
+    } catch (err) {
+      console.error("Error fetching image recommendations:", err)
+      setError("이미지 추천을 불러오는데 실패했습니다.")
+      setRecommendedImages([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchRecommendations()
   }, [questionContent])
 
@@ -111,7 +111,13 @@ export function ImageRecommendations({ questionContent, onSelectImage }: ImageRe
           <div className="text-center">
             <AlertCircle className="h-8 w-8 mx-auto mb-2" />
             <p>{error}</p>
-            <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={fetchRecommendations}
+            >
               다시 시도
             </Button>
           </div>
